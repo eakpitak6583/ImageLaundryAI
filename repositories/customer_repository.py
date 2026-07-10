@@ -17,7 +17,7 @@ class CustomerRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM customers
-            ORDER BY name
+            ORDER BY customer_name
         """)
 
     def get(self, customer_id):
@@ -37,17 +37,17 @@ class CustomerRepository(BaseRepository):
             FROM customers
             WHERE
 
-                name LIKE ?
-
-                OR code LIKE ?
+                customer_name LIKE ?
 
                 OR address LIKE ?
 
-                OR contact_person LIKE ?
+                OR contact LIKE ?
 
                 OR phone LIKE ?
 
-            ORDER BY name
+                OR email LIKE ?
+
+            ORDER BY customer_name
         """, (
 
             keyword,
@@ -66,69 +66,78 @@ class CustomerRepository(BaseRepository):
     # Find
     # ==========================================================
 
-    def find_by_name(self, name):
+    def find_by_name(self, customer_name):
+
+        if not customer_name:
+
+            return None
 
         return self.fetch_one("""
             SELECT *
             FROM customers
-            WHERE LOWER(name)=LOWER(?)
+            WHERE LOWER(customer_name)=LOWER(?)
             LIMIT 1
-        """, (name.strip(),))
+        """, (
 
-    def find_like_name(self, name):
+            customer_name.strip(),
 
-        keyword = f"%{name.strip()}%"
+        ))
+
+    def find_like_name(self, customer_name):
+
+        if not customer_name:
+
+            return None
+
+        keyword = f"%{customer_name.strip()}%"
 
         return self.fetch_one("""
             SELECT *
             FROM customers
-            WHERE LOWER(name) LIKE LOWER(?)
+            WHERE LOWER(customer_name) LIKE LOWER(?)
             LIMIT 1
-        """, (keyword,))
+        """, (
+
+            keyword,
+
+        ))
 
     # ==========================================================
     # Find or Create
     # ==========================================================
 
-    def find_or_create(self, name):
+    def find_or_create(self, customer_name):
 
-        if not name:
+        if not customer_name:
 
             return None
 
-        customer = self.find_by_name(name)
+        customer = self.find_by_name(customer_name)
 
         if customer:
 
             return customer["id"]
 
-        customer = self.find_like_name(name)
+        customer = self.find_like_name(customer_name)
 
         if customer:
 
             return customer["id"]
 
-        customer_id = self.execute("""
-
+        return self.execute("""
             INSERT INTO customers
             (
-
-                name
-
+                customer_name
             )
-
             VALUES
             (
                 ?
             )
-
         """, (
 
-            name.strip(),
+            customer_name.strip(),
 
         ))
-
-        return customer_id
 
     # ==========================================================
     # Create
@@ -137,21 +146,20 @@ class CustomerRepository(BaseRepository):
     def create(self, data):
 
         return self.execute("""
-
             INSERT INTO customers
             (
 
-                code,
-
-                name,
+                customer_name,
 
                 address,
 
-                contact_person,
+                contact,
 
                 phone,
 
-                email
+                email,
+
+                note
 
             )
 
@@ -159,20 +167,19 @@ class CustomerRepository(BaseRepository):
             (
                 ?,?,?,?,?,?
             )
-
         """, (
 
-            data.get("code"),
-
-            data.get("name"),
+            data.get("customer_name"),
 
             data.get("address"),
 
-            data.get("contact_person"),
+            data.get("contact"),
 
             data.get("phone"),
 
             data.get("email"),
+
+            data.get("note"),
 
         ))
 
@@ -183,40 +190,35 @@ class CustomerRepository(BaseRepository):
     def update(self, customer_id, data):
 
         self.execute("""
-
             UPDATE customers
-
             SET
 
-                code=?,
-
-                name=?,
+                customer_name=?,
 
                 address=?,
 
-                contact_person=?,
+                contact=?,
 
                 phone=?,
 
                 email=?,
 
-                updated_at=CURRENT_TIMESTAMP
+                note=?
 
             WHERE id=?
-
         """, (
 
-            data.get("code"),
-
-            data.get("name"),
+            data.get("customer_name"),
 
             data.get("address"),
 
-            data.get("contact_person"),
+            data.get("contact"),
 
             data.get("phone"),
 
             data.get("email"),
+
+            data.get("note"),
 
             customer_id,
 
