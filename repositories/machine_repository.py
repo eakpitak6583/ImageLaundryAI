@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Machine Repository
 """
 
@@ -17,7 +17,7 @@ class MachineRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM machines
-            ORDER BY machine_name, model
+            ORDER BY brand, model
         """)
 
     def get(self, machine_id):
@@ -25,7 +25,7 @@ class MachineRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM machines
-            WHERE id=?
+            WHERE id = ?
         """, (machine_id,))
 
     def search(self, keyword):
@@ -37,18 +37,14 @@ class MachineRepository(BaseRepository):
             FROM machines
             WHERE
 
-                machine_name LIKE ?
+                brand LIKE ?
 
                 OR model LIKE ?
 
-                OR serial_number LIKE ?
+                OR machine_type LIKE ?
 
-                OR machine_code LIKE ?
-
-            ORDER BY machine_name
+            ORDER BY brand, model
         """, (
-
-            keyword,
 
             keyword,
 
@@ -68,31 +64,27 @@ class MachineRepository(BaseRepository):
 
             INSERT INTO machines(
 
-                machine_code,
-
-                machine_name,
+                brand,
 
                 model,
 
-                serial_number,
+                machine_type,
 
-                customer_id
+                manual_file
 
             )
 
-            VALUES(?,?,?,?,?)
+            VALUES(?,?,?,?)
 
         """, (
 
-            data.get("machine_code"),
-
-            data.get("machine_name"),
+            data.get("brand"),
 
             data.get("model"),
 
-            data.get("serial_number"),
+            data.get("machine_type"),
 
-            data.get("customer_id"),
+            data.get("manual_file"),
 
         ))
 
@@ -108,29 +100,27 @@ class MachineRepository(BaseRepository):
 
             SET
 
-                machine_code=?,
+                brand = ?,
 
-                machine_name=?,
+                model = ?,
 
-                model=?,
+                machine_type = ?,
 
-                serial_number=?,
+                manual_file = ?,
 
-                customer_id=?
+                updated_at = CURRENT_TIMESTAMP
 
-            WHERE id=?
+            WHERE id = ?
 
         """, (
 
-            data.get("machine_code"),
-
-            data.get("machine_name"),
+            data.get("brand"),
 
             data.get("model"),
 
-            data.get("serial_number"),
+            data.get("machine_type"),
 
-            data.get("customer_id"),
+            data.get("manual_file"),
 
             machine_id,
 
@@ -146,7 +136,7 @@ class MachineRepository(BaseRepository):
 
             DELETE FROM machines
 
-            WHERE id=?
+            WHERE id = ?
 
         """, (
 

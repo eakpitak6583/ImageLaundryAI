@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Customer Repository
 """
 
@@ -17,7 +17,7 @@ class CustomerRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM customers
-            ORDER BY name
+            ORDER BY customer_name
         """)
 
     def get(self, customer_id):
@@ -25,7 +25,7 @@ class CustomerRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM customers
-            WHERE id=?
+            WHERE id = ?
         """, (customer_id,))
 
     def search(self, keyword):
@@ -36,26 +36,18 @@ class CustomerRepository(BaseRepository):
             SELECT *
             FROM customers
             WHERE
-
-                name LIKE ?
-
+                customer_name LIKE ?
+                OR contact LIKE ?
                 OR address LIKE ?
-
                 OR phone LIKE ?
-
                 OR email LIKE ?
-
-            ORDER BY name
+            ORDER BY customer_name
         """, (
-
             keyword,
-
             keyword,
-
             keyword,
-
             keyword,
-
+            keyword,
         ))
 
     # ==========================================================
@@ -65,30 +57,32 @@ class CustomerRepository(BaseRepository):
     def create(self, data):
 
         return self.execute("""
-
-            INSERT INTO customers(
-
-                name,
-
+            INSERT INTO customers
+            (
+                customer_name,
                 address,
-
+                contact,
                 phone,
-
-                email
-
+                email,
+                note
             )
-
-            VALUES(?,?,?,?)
-
+            VALUES
+            (
+                ?,?,?,?,?,?
+            )
         """, (
 
-            data.get("name"),
+            data.get("customer_name"),
 
             data.get("address"),
+
+            data.get("contact"),
 
             data.get("phone"),
 
             data.get("email"),
+
+            data.get("note"),
 
         ))
 
@@ -99,30 +93,37 @@ class CustomerRepository(BaseRepository):
     def update(self, customer_id, data):
 
         self.execute("""
-
             UPDATE customers
-
             SET
 
-                name=?,
+                customer_name = ?,
 
-                address=?,
+                address = ?,
 
-                phone=?,
+                contact = ?,
 
-                email=?
+                phone = ?,
 
-            WHERE id=?
+                email = ?,
 
+                note = ?,
+
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
         """, (
 
-            data.get("name"),
+            data.get("customer_name"),
 
             data.get("address"),
+
+            data.get("contact"),
 
             data.get("phone"),
 
             data.get("email"),
+
+            data.get("note"),
 
             customer_id,
 
@@ -135,16 +136,9 @@ class CustomerRepository(BaseRepository):
     def delete(self, customer_id):
 
         self.execute("""
-
             DELETE FROM customers
-
-            WHERE id=?
-
-        """, (
-
-            customer_id,
-
-        ))
+            WHERE id = ?
+        """, (customer_id,))
 
 
 customer_repository = CustomerRepository()

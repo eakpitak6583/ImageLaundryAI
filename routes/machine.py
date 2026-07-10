@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Machine Routes
 """
 
@@ -9,6 +9,7 @@ from flask import (
     request,
     redirect,
     url_for,
+    flash,
 )
 
 from flask_login import login_required
@@ -23,7 +24,11 @@ machine_bp = Blueprint(
 )
 
 
-@machine_bp.route("/")
+# ==========================================================
+# Machine List
+# ==========================================================
+
+@machine_bp.route("/", methods=["GET"])
 @login_required
 def index():
 
@@ -41,11 +46,26 @@ def index():
     )
 
 
-@machine_bp.route("/<int:machine_id>")
+# ==========================================================
+# Machine Detail
+# ==========================================================
+
+@machine_bp.route("/<int:machine_id>", methods=["GET"])
 @login_required
 def detail(machine_id):
 
     machine = machine_service.get(machine_id)
+
+    if not machine:
+
+        flash(
+            "Machine not found.",
+            "warning",
+        )
+
+        return redirect(
+            url_for("machine.index")
+        )
 
     return render_template(
         "machine_detail.html",
@@ -53,23 +73,72 @@ def detail(machine_id):
     )
 
 
+# ==========================================================
+# Create Machine
+# ==========================================================
+
 @machine_bp.route("/create", methods=["POST"])
 @login_required
 def create():
 
-    machine_service.create(request.form)
+    result = machine_service.create(
+        request.form
+    )
 
-    return redirect(url_for("machine.index"))
+    if result.get("success"):
+
+        flash(
+            "Machine created successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to create machine.",
+            ),
+            "danger",
+        )
+
+    return redirect(
+        url_for("machine.index")
+    )
 
 
-@machine_bp.route("/<int:machine_id>/update", methods=["POST"])
+# ==========================================================
+# Update Machine
+# ==========================================================
+
+@machine_bp.route(
+    "/<int:machine_id>/update",
+    methods=["POST"],
+)
 @login_required
 def update(machine_id):
 
-    machine_service.update(
+    result = machine_service.update(
         machine_id,
         request.form,
     )
+
+    if result.get("success"):
+
+        flash(
+            "Machine updated successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to update machine.",
+            ),
+            "danger",
+        )
 
     return redirect(
         url_for(
@@ -79,11 +148,37 @@ def update(machine_id):
     )
 
 
-@machine_bp.route("/<int:machine_id>/delete", methods=["POST"])
+# ==========================================================
+# Delete Machine
+# ==========================================================
+
+@machine_bp.route(
+    "/<int:machine_id>/delete",
+    methods=["POST"],
+)
 @login_required
 def delete(machine_id):
 
-    machine_service.delete(machine_id)
+    result = machine_service.delete(
+        machine_id
+    )
+
+    if result.get("success"):
+
+        flash(
+            "Machine deleted successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to delete machine.",
+            ),
+            "danger",
+        )
 
     return redirect(
         url_for("machine.index")

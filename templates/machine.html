@@ -2,58 +2,140 @@
 
 {% block content %}
 
-<h2>
+<div class="card shadow-sm">
 
-⚙ Machines
+    <div class="card-header bg-primary text-white">
 
-</h2>
+        <div class="d-flex justify-content-between align-items-center">
 
-<table class="table table-hover">
+            <h4 class="mb-0">
 
-<thead>
+                <i class="bi bi-cpu"></i>
 
-<tr>
+                Machine Management
 
-<th>Model</th>
+            </h4>
 
-<th>SAP</th>
+            <form
+                method="GET"
+                action="{{ url_for('machine.index') }}"
+                class="d-flex">
 
-<th>Serial</th>
+                <input
+                    type="text"
+                    name="q"
+                    class="form-control form-control-sm me-2"
+                    placeholder="Search..."
+                    value="{{ keyword }}">
 
-<th>Customer</th>
+                <button
+                    class="btn btn-light btn-sm"
+                    type="submit">
 
-</tr>
+                    <i class="bi bi-search"></i>
 
-</thead>
+                </button>
 
-<tbody>
+            </form>
 
-{% for m in machines %}
+        </div>
 
-<tr>
+    </div>
 
-<td>
+    <div class="card-body p-0">
 
-<a href="/machines/{{ m[0] }}">
+        <table class="table table-hover table-striped mb-0">
 
-{{ m[1] }}
+            <thead class="table-light">
 
-</a>
+                <tr>
 
-</td>
+                    <th width="70">ID</th>
 
-<td>{{ m[2] }}</td>
+                    <th>Brand</th>
 
-<td>{{ m[3] }}</td>
+                    <th>Model</th>
 
-<td>{{ m[4] }}</td>
+                    <th>Machine Type</th>
 
-</tr>
+                    <th>Manual</th>
 
-{% endfor %}
+                </tr>
 
-</tbody>
+            </thead>
 
-</table>
+            <tbody>
+
+            {% if machines %}
+
+                {% for m in machines %}
+
+                <tr>
+
+                    <td>{{ m["id"] }}</td>
+
+                    <td>
+
+                        <a href="{{ url_for('machine.detail', machine_id=m['id']) }}">
+
+                            {{ m["brand"] }}
+
+                        </a>
+
+                    </td>
+
+                    <td>{{ m["model"] }}</td>
+
+                    <td>{{ m["machine_type"] }}</td>
+
+                    <td>
+
+                        {% if m["manual_file"] %}
+
+                            <span class="badge bg-success">
+
+                                <i class="bi bi-file-earmark-pdf"></i>
+
+                                PDF
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+
+                                -
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="5" class="text-center text-muted py-4">
+
+                        No machine found.
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
 
 {% endblock %}

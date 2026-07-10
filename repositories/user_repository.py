@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 User Repository
 """
 
@@ -13,6 +13,7 @@ class UserRepository(BaseRepository):
     # ==========================================================
 
     def get_all(self):
+
         return self.fetch_all("""
             SELECT *
             FROM users
@@ -20,6 +21,7 @@ class UserRepository(BaseRepository):
         """)
 
     def get(self, user_id):
+
         return self.fetch_one("""
             SELECT *
             FROM users
@@ -27,6 +29,7 @@ class UserRepository(BaseRepository):
         """, (user_id,))
 
     def find_by_username(self, username):
+
         return self.fetch_one("""
             SELECT *
             FROM users
@@ -35,23 +38,17 @@ class UserRepository(BaseRepository):
 
     def login(self, username):
         """
-        ใช้สำหรับ Authentication
-        การตรวจสอบ Password ทำใน AuthService
+        Authentication
+
+        การตรวจสอบ Password
+        ทำใน AuthService
         """
+
         return self.fetch_one("""
             SELECT *
             FROM users
             WHERE username = ?
-              AND active = 1
         """, (username,))
-
-    def get_active_users(self):
-        return self.fetch_all("""
-            SELECT *
-            FROM users
-            WHERE active = 1
-            ORDER BY fullname
-        """)
 
     # ==========================================================
     # Create
@@ -65,23 +62,24 @@ class UserRepository(BaseRepository):
             username,
             password,
             fullname,
-            email,
-            role,
-            active
+            role
         )
         VALUES
         (
-            ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?
         )
         """
 
         return self.execute(sql, (
+
             data["username"],
+
             data["password"],
+
             data.get("fullname"),
-            data.get("email"),
+
             data.get("role", "technician"),
-            data.get("active", 1)
+
         ))
 
     # ==========================================================
@@ -94,18 +92,18 @@ class UserRepository(BaseRepository):
         UPDATE users
         SET
             fullname = ?,
-            email = ?,
-            role = ?,
-            active = ?
+            role = ?
         WHERE id = ?
         """
 
         self.execute(sql, (
+
             data.get("fullname"),
-            data.get("email"),
+
             data.get("role"),
-            data.get("active", 1),
-            user_id
+
+            user_id,
+
         ))
 
     def change_password(self, user_id, password):
@@ -115,29 +113,16 @@ class UserRepository(BaseRepository):
             SET password = ?
             WHERE id = ?
         """, (
+
             password,
-            user_id
+
+            user_id,
+
         ))
 
     # ==========================================================
-    # Delete (Soft Delete)
+    # Delete
     # ==========================================================
-
-    def deactivate(self, user_id):
-
-        self.execute("""
-            UPDATE users
-            SET active = 0
-            WHERE id = ?
-        """, (user_id,))
-
-    def activate(self, user_id):
-
-        self.execute("""
-            UPDATE users
-            SET active = 1
-            WHERE id = ?
-        """, (user_id,))
 
     def delete(self, user_id):
 

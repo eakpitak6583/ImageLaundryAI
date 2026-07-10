@@ -4,320 +4,213 @@
 
 <div class="container-fluid">
 
-<div class="row">
+    <div class="row">
 
-<!-- ===================================================== -->
-<!-- LEFT -->
-<!-- ===================================================== -->
+        <!-- ===================================================== -->
+        <!-- LEFT -->
+        <!-- ===================================================== -->
 
-<div class="col-lg-4">
+        <div class="col-lg-4">
 
-<div class="card shadow-sm mb-4">
+            <div class="card shadow-sm mb-4">
 
-<div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white">
 
-Machine Image
+                    <i class="bi bi-image"></i>
 
-</div>
+                    Machine Image
 
-<div class="card-body text-center">
+                </div>
 
-{% if machine.image_file %}
+                <div class="card-body text-center">
 
-<img
+                    {% if machine.image_file %}
 
-src="{{ url_for('static', filename='uploads/machine_images/' ~ machine.image_file) }}"
+                        <img
+                            src="{{ url_for('static', filename='uploads/machine_images/' ~ machine.image_file) }}"
+                            class="img-fluid rounded"
+                            style="max-height:350px;">
 
-class="img-fluid rounded"
+                    {% else %}
 
-style="max-height:350px;">
+                        <div class="text-muted p-5">
 
-{% else %}
+                            <i class="bi bi-image fs-1"></i>
 
-<div
-class="text-muted p-5">
+                            <br><br>
 
-No Image
+                            No Image
 
-</div>
+                        </div>
 
-{% endif %}
+                    {% endif %}
 
-</div>
+                </div>
 
-</div>
+            </div>
 
-<div class="card shadow-sm">
+            <div class="card shadow-sm">
 
-<div class="card-header">
+                <div class="card-header">
 
-Quick Action
+                    Quick Action
 
-</div>
+                </div>
 
-<div class="card-body d-grid gap-2">
+                <div class="card-body d-grid gap-2">
 
-{% if machine.manual_file %}
+                    {% if machine.manual_file %}
 
-<a
+                        <a
+                            class="btn btn-danger"
+                            target="_blank"
+                            href="/uploads/manuals/{{ machine.manual_file }}">
 
-class="btn btn-danger"
+                            <i class="bi bi-file-earmark-pdf"></i>
 
-target="_blank"
+                            Open Manual
 
-href="/uploads/manuals/{{ machine.manual_file }}">
+                        </a>
 
-📖 Open Manual
+                    {% else %}
 
-</a>
+                        <button
+                            class="btn btn-outline-secondary"
+                            disabled>
 
-{% endif %}
+                            No Manual
 
-<button
+                        </button>
 
-class="btn btn-success"
+                    {% endif %}
 
-disabled>
+                    <button
+                        class="btn btn-success"
+                        disabled>
 
-🤖 Ask AI
+                        <i class="bi bi-robot"></i>
 
-</button>
+                        Ask AI
 
-<button
+                    </button>
 
-class="btn btn-secondary"
+                    <button
+                        class="btn btn-secondary"
+                        disabled>
 
-disabled>
+                        <i class="bi bi-qr-code"></i>
 
-🏷 Generate QR
+                        Generate QR
 
-</button>
+                    </button>
 
-</div>
+                </div>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-<!-- ===================================================== -->
-<!-- RIGHT -->
-<!-- ===================================================== -->
+        <!-- ===================================================== -->
+        <!-- RIGHT -->
+        <!-- ===================================================== -->
 
-<div class="col-lg-8">
+        <div class="col-lg-8">
 
-<div class="card shadow-sm">
+            <div class="card shadow-sm">
 
-<div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white">
 
-Machine Specification
+                    Machine Specification
 
-</div>
+                </div>
 
-<div class="card-body">
+                <div class="card-body">
 
-<table class="table table-bordered">
+                    <table class="table table-bordered align-middle">
 
-<tr>
+                        <tr>
+                            <th width="220">Brand</th>
+                            <td>{{ machine.brand or "-" }}</td>
+                        </tr>
 
-<th width="220">
+                        <tr>
+                            <th>Model</th>
+                            <td>{{ machine.model or "-" }}</td>
+                        </tr>
 
-Brand
+                        <tr>
+                            <th>Machine Type</th>
+                            <td>{{ machine.machine_type or "-" }}</td>
+                        </tr>
 
-</th>
+                        <tr>
+                            <th>Category</th>
+                            <td>{{ machine.category or "-" }}</td>
+                        </tr>
 
-<td>
+                        <tr>
+                            <th>Capacity</th>
+                            <td>{{ machine.capacity or "-" }}</td>
+                        </tr>
 
-{{ machine.brand }}
+                        <tr>
+                            <th>Fuel Type</th>
+                            <td>{{ machine.fuel_type or "-" }}</td>
+                        </tr>
 
-</td>
+                        <tr>
+                            <th>Voltage</th>
+                            <td>{{ machine.voltage or "-" }}</td>
+                        </tr>
 
-</tr>
+                        <tr>
+                            <th>Phase</th>
+                            <td>{{ machine.phase or "-" }}</td>
+                        </tr>
 
-<tr>
+                        <tr>
+                            <th>Frequency</th>
+                            <td>{{ machine.frequency or "-" }}</td>
+                        </tr>
 
-<th>
+                        <tr>
+                            <th>Manufacturer</th>
+                            <td>{{ machine.manufacturer or "-" }}</td>
+                        </tr>
 
-Model
+                        <tr>
+                            <th>Country</th>
+                            <td>{{ machine.country or "-" }}</td>
+                        </tr>
 
-</th>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ machine.description or "-" }}</td>
+                        </tr>
 
-<td>
+                    </table>
 
-{{ machine.model }}
+                </div>
 
-</td>
+            </div>
 
-</tr>
+            <div class="mt-3">
 
-<tr>
+                <a
+                    href="{{ url_for('machine_master.index') }}"
+                    class="btn btn-secondary">
 
-<th>
+                    <i class="bi bi-arrow-left"></i>
 
-Machine Type
+                    Back
 
-</th>
+                </a>
 
-<td>
+            </div>
 
-{{ machine.machine_type }}
+        </div>
 
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Category
-
-</th>
-
-<td>
-
-{{ machine.category }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Capacity
-
-</th>
-
-<td>
-
-{{ machine.capacity }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Fuel
-
-</th>
-
-<td>
-
-{{ machine.fuel_type }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Voltage
-
-</th>
-
-<td>
-
-{{ machine.voltage }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Phase
-
-</th>
-
-<td>
-
-{{ machine.phase }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Frequency
-
-</th>
-
-<td>
-
-{{ machine.frequency }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Manufacturer
-
-</th>
-
-<td>
-
-{{ machine.manufacturer }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Country
-
-</th>
-
-<td>
-
-{{ machine.country }}
-
-</td>
-
-</tr>
-
-<tr>
-
-<th>
-
-Description
-
-</th>
-
-<td>
-
-{{ machine.description }}
-
-</td>
-
-</tr>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 

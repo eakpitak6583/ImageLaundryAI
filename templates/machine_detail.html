@@ -2,117 +2,185 @@
 
 {% block content %}
 
-<h2>
+<div class="card shadow-sm">
 
-{{ machine[1] }}
+    <div class="card-header bg-primary text-white">
 
-</h2>
+        <h4 class="mb-0">
 
-<hr>
+            <i class="bi bi-cpu"></i>
 
-<table class="table">
+            Machine Information
 
-<tr>
+        </h4>
 
-<th width="180">
+    </div>
 
-SAP
+    <div class="card-body">
 
-</th>
+        <h3 class="mb-4">
 
-<td>
+            {{ machine["brand"] }}
 
-{{ machine[2] }}
+            <small class="text-muted">
 
-</td>
+                {{ machine["model"] }}
 
-</tr>
+            </small>
 
-<tr>
+        </h3>
 
-<th>
+        <table class="table table-bordered">
 
-Serial
+            <tr>
 
-</th>
+                <th width="220">
 
-<td>
+                    Brand
 
-{{ machine[3] }}
+                </th>
 
-</td>
+                <td>
 
-</tr>
+                    {{ machine["brand"] }}
 
-<tr>
+                </td>
 
-<th>
+            </tr>
 
-Customer
+            <tr>
 
-</th>
+                <th>
 
-<td>
+                    Model
 
-{{ machine[4] }}
+                </th>
 
-</td>
+                <td>
 
-</tr>
+                    {{ machine["model"] }}
 
-</table>
+                </td>
 
-<hr>
+            </tr>
 
-<div class="row">
+            <tr>
 
-<div class="col-md-3">
+                <th>
 
-<a
+                    Machine Type
 
-class="btn btn-primary w-100">
+                </th>
 
-Repair History
+                <td>
 
-</a>
+                    {{ machine["machine_type"] }}
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <th>
+
+                    Manual File
+
+                </th>
+
+                <td>
+
+                    {% if machine["manual_file"] %}
+
+                        {{ machine["manual_file"] }}
+
+                    {% else %}
+
+                        <span class="text-muted">
+
+                            No Manual
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
 
 </div>
 
-<div class="col-md-3">
+<div class="row mt-4">
 
-<a
+    <div class="col-md-3 mb-3">
 
-class="btn btn-success w-100">
+        <a
+            class="btn btn-primary w-100 disabled">
 
-Manual
+            <i class="bi bi-tools"></i>
 
-</a>
+            Repair History
+
+        </a>
+
+    </div>
+
+    <div class="col-md-3 mb-3">
+
+        <a
+            class="btn btn-success w-100 disabled">
+
+            <i class="bi bi-file-earmark-pdf"></i>
+
+            Manual
+
+        </a>
+
+    </div>
+
+    <div class="col-md-3 mb-3">
+
+        <a
+            class="btn btn-warning w-100 disabled">
+
+            <i class="bi bi-gear"></i>
+
+            Spare Parts
+
+        </a>
+
+    </div>
+
+    <div class="col-md-3 mb-3">
+
+        <a
+            class="btn btn-danger w-100 disabled">
+
+            <i class="bi bi-robot"></i>
+
+            AI Assistant
+
+        </a>
+
+    </div>
 
 </div>
 
-<div class="col-md-3">
+<div class="mt-4">
 
-<a
+    <a
+        href="{{ url_for('machine.index') }}"
+        class="btn btn-secondary">
 
-class="btn btn-warning w-100">
+        <i class="bi bi-arrow-left"></i>
 
-Spare Parts
+        Back
 
-</a>
-
-</div>
-
-<div class="col-md-3">
-
-<a
-
-class="btn btn-danger w-100">
-
-AI Assistant
-
-</a>
-
-</div>
+    </a>
 
 </div>
 

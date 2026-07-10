@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Machine Master Routes
 """
 
@@ -9,6 +9,7 @@ from flask import (
     request,
     redirect,
     url_for,
+    flash,
 )
 
 from flask_login import login_required
@@ -32,16 +33,16 @@ machine_master_bp = Blueprint(
 
 
 # ==========================================================
-# Home
+# Machine Master List
 # ==========================================================
 
-@machine_master_bp.route("/")
+@machine_master_bp.route("/", methods=["GET"])
 @login_required
 def index():
 
     keyword = request.args.get(
         "q",
-        ""
+        "",
     ).strip()
 
     if keyword:
@@ -66,16 +67,32 @@ def index():
 
 
 # ==========================================================
-# Detail
+# Machine Detail
 # ==========================================================
 
-@machine_master_bp.route("/<int:machine_id>")
+@machine_master_bp.route(
+    "/<int:machine_id>",
+    methods=["GET"],
+)
 @login_required
 def detail(machine_id):
 
     machine = machine_master_service.get(
         machine_id
     )
+
+    if not machine:
+
+        flash(
+            "Machine not found.",
+            "warning",
+        )
+
+        return redirect(
+            url_for(
+                "machine_master.index"
+            )
+        )
 
     return render_template(
 
@@ -99,48 +116,59 @@ def create():
 
     data = request.form.to_dict()
 
-    # ------------------------------------------------------
-    # Upload Machine Image
-    # ------------------------------------------------------
-
     image = request.files.get(
         "image_file"
     )
 
-    data["image_file"] = file_service.save(
+    if image and image.filename:
 
-        image,
+        data["image_file"] = file_service.save(
 
-        Config.MACHINE_IMAGE_FOLDER,
+            image,
 
-    )
+            Config.MACHINE_IMAGE_FOLDER,
 
-    # ------------------------------------------------------
-    # Upload Manual PDF
-    # ------------------------------------------------------
+        )
 
     manual = request.files.get(
         "manual_file"
     )
 
-    data["manual_file"] = file_service.save(
+    if manual and manual.filename:
 
-        manual,
+        data["manual_file"] = file_service.save(
 
-        Config.MANUAL_UPLOAD_FOLDER,
+            manual,
 
-    )
-
-    machine_master_service.create(data)
-
-    return redirect(
-
-        url_for(
-
-            "machine_master.index"
+            Config.MANUAL_UPLOAD_FOLDER,
 
         )
 
+    result = machine_master_service.create(
+        data
+    )
+
+    if result.get("success"):
+
+        flash(
+            "Machine created successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to create machine.",
+            ),
+            "danger",
+        )
+
+    return redirect(
+        url_for(
+            "machine_master.index"
+        )
     )
 
 
@@ -185,13 +213,30 @@ def update(machine_id):
 
         )
 
-    machine_master_service.update(
+    result = machine_master_service.update(
 
         machine_id,
 
         data,
 
     )
+
+    if result.get("success"):
+
+        flash(
+            "Machine updated successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to update machine.",
+            ),
+            "danger",
+        )
 
     return redirect(
 
@@ -217,11 +262,26 @@ def update(machine_id):
 @login_required
 def delete(machine_id):
 
-    machine_master_service.delete(
-
+    result = machine_master_service.delete(
         machine_id
-
     )
+
+    if result.get("success"):
+
+        flash(
+            "Machine deleted successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to delete machine.",
+            ),
+            "danger",
+        )
 
     return redirect(
 

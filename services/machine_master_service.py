@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Machine Master Service
 """
 
@@ -40,11 +40,15 @@ class MachineMasterService(BaseService):
 
         if not data.get("brand"):
 
-            return self.error("Brand is required")
+            return self.error(
+                "Brand is required"
+            )
 
         if not data.get("model"):
 
-            return self.error("Model is required")
+            return self.error(
+                "Model is required"
+            )
 
         machine_id = self.repo.create(data)
 
@@ -58,18 +62,19 @@ class MachineMasterService(BaseService):
 
         if not data.get("brand"):
 
-            return self.error("Brand is required")
+            return self.error(
+                "Brand is required"
+            )
 
         if not data.get("model"):
 
-            return self.error("Model is required")
+            return self.error(
+                "Model is required"
+            )
 
         self.repo.update(
-
             machine_id,
-
             data,
-
         )
 
         return self.success()

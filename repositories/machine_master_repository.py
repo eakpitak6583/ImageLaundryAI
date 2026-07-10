@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Machine Master Repository
 """
 
@@ -72,46 +72,47 @@ class MachineMasterRepository(BaseRepository):
 
     def create(self, data):
 
-        sql = """
-        INSERT INTO machine_master
-        (
+        return self.execute("""
 
-            brand,
+            INSERT INTO machine_master
+            (
 
-            model,
+                brand,
 
-            machine_type,
+                model,
 
-            category,
+                machine_type,
 
-            capacity,
+                category,
 
-            fuel_type,
+                capacity,
 
-            voltage,
+                fuel_type,
 
-            phase,
+                voltage,
 
-            frequency,
+                phase,
 
-            manufacturer,
+                frequency,
 
-            country,
+                manufacturer,
 
-            manual_file,
+                country,
 
-            image_file,
+                manual_file,
 
-            description
+                image_file,
 
-        )
-        VALUES
-        (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        )
-        """
+                description
 
-        return self.execute(sql, (
+            )
+
+            VALUES
+            (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
+
+        """, (
 
             data.get("brand"),
 
@@ -149,44 +150,45 @@ class MachineMasterRepository(BaseRepository):
 
     def update(self, machine_id, data):
 
-        sql = """
-        UPDATE machine_master
-        SET
+        self.execute("""
 
-            brand=?,
+            UPDATE machine_master
 
-            model=?,
+            SET
 
-            machine_type=?,
+                brand = ?,
 
-            category=?,
+                model = ?,
 
-            capacity=?,
+                machine_type = ?,
 
-            fuel_type=?,
+                category = ?,
 
-            voltage=?,
+                capacity = ?,
 
-            phase=?,
+                fuel_type = ?,
 
-            frequency=?,
+                voltage = ?,
 
-            manufacturer=?,
+                phase = ?,
 
-            country=?,
+                frequency = ?,
 
-            manual_file=?,
+                manufacturer = ?,
 
-            image_file=?,
+                country = ?,
 
-            description=?,
+                manual_file = ?,
 
-            updated_at=CURRENT_TIMESTAMP
+                image_file = ?,
 
-        WHERE id=?
-        """
+                description = ?,
 
-        self.execute(sql, (
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
+
+        """, (
 
             data.get("brand"),
 
@@ -227,9 +229,16 @@ class MachineMasterRepository(BaseRepository):
     def delete(self, machine_id):
 
         self.execute("""
+
             DELETE FROM machine_master
+
             WHERE id = ?
-        """, (machine_id,))
+
+        """, (
+
+            machine_id,
+
+        ))
 
 
 machine_master_repository = MachineMasterRepository()

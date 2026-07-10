@@ -3,22 +3,21 @@
 {% block content %}
 
 {% set title = "Machine Master" %}
-{% set add_url = None %}
-
 {% include "components/page_header.html" %}
 {% include "components/search_box.html" %}
+
 <div class="mb-3">
 
-<button
-class="btn btn-success"
-data-bs-toggle="modal"
-data-bs-target="#addMachineModal">
+    <button
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#addMachineModal">
 
-<i class="bi bi-plus-circle"></i>
+        <i class="bi bi-plus-circle"></i>
 
-Add Machine
+        Add Machine
 
-</button>
+    </button>
 
 </div>
 
@@ -74,7 +73,7 @@ Add Machine
 
                         <a
                             href="{{ url_for('machine_master.detail', machine_id=m.id) }}"
-                            class="btn btn-sm btn-primary">
+                            class="btn btn-primary btn-sm">
 
                             View
 
@@ -90,9 +89,10 @@ Add Machine
 
                 <tr>
 
-                    <td colspan="7" class="text-center text-muted">
+                    <td colspan="7"
+                        class="text-center text-muted">
 
-                        ยังไม่มีข้อมูล Machine Master
+                        No Machine Master Data
 
                     </td>
 
@@ -107,9 +107,10 @@ Add Machine
     </div>
 
 </div>
-<!-- ===================================================== -->
+
+<!-- ====================================================== -->
 <!-- Add Machine -->
-<!-- ===================================================== -->
+<!-- ====================================================== -->
 
 <div
 class="modal fade"
@@ -121,18 +122,21 @@ tabindex="-1">
 <div class="modal-content">
 
 <form
-method="post"
-action="{{ url_for('machine_master.create') }}">
+method="POST"
+action="{{ url_for('machine_master.create') }}"
+enctype="multipart/form-data">
 
 <div class="modal-header">
 
-<h5>
+<h5 class="modal-title">
 
-Add Machine Master
+Image Laundry AI
+Machine Master
 
 </h5>
 
 <button
+type="button"
 class="btn-close"
 data-bs-dismiss="modal">
 
@@ -146,7 +150,11 @@ data-bs-dismiss="modal">
 
 <div class="col-md-4">
 
-<label>Brand</label>
+<label class="form-label">
+
+Brand
+
+</label>
 
 <input
 name="brand"
@@ -157,7 +165,11 @@ required>
 
 <div class="col-md-4">
 
-<label>Model</label>
+<label class="form-label">
+
+Model
+
+</label>
 
 <input
 name="model"
@@ -168,7 +180,11 @@ required>
 
 <div class="col-md-4">
 
-<label>Machine Type</label>
+<label class="form-label">
+
+Machine Type
+
+</label>
 
 <input
 name="machine_type"
@@ -182,7 +198,25 @@ class="form-control">
 
 <div class="col-md-3">
 
-<label>Capacity</label>
+<label class="form-label">
+
+Category
+
+</label>
+
+<input
+name="category"
+class="form-control">
+
+</div>
+
+<div class="col-md-3">
+
+<label class="form-label">
+
+Capacity
+
+</label>
 
 <input
 name="capacity"
@@ -192,7 +226,25 @@ class="form-control">
 
 <div class="col-md-3">
 
-<label>Voltage</label>
+<label class="form-label">
+
+Fuel Type
+
+</label>
+
+<input
+name="fuel_type"
+class="form-control">
+
+</div>
+
+<div class="col-md-3">
+
+<label class="form-label">
+
+Voltage
+
+</label>
 
 <input
 name="voltage"
@@ -200,9 +252,17 @@ class="form-control">
 
 </div>
 
+</div>
+
+<div class="row mt-3">
+
 <div class="col-md-3">
 
-<label>Phase</label>
+<label class="form-label">
+
+Phase
+
+</label>
 
 <input
 name="phase"
@@ -212,10 +272,42 @@ class="form-control">
 
 <div class="col-md-3">
 
-<label>Frequency</label>
+<label class="form-label">
+
+Frequency
+
+</label>
 
 <input
 name="frequency"
+class="form-control">
+
+</div>
+
+<div class="col-md-3">
+
+<label class="form-label">
+
+Manufacturer
+
+</label>
+
+<input
+name="manufacturer"
+class="form-control">
+
+</div>
+
+<div class="col-md-3">
+
+<label class="form-label">
+
+Country
+
+</label>
+
+<input
+name="country"
 class="form-control">
 
 </div>
@@ -226,21 +318,33 @@ class="form-control">
 
 <div class="col-md-6">
 
-<label>Manufacturer</label>
+<label class="form-label">
+
+Machine Image
+
+</label>
 
 <input
-name="manufacturer"
-class="form-control">
+type="file"
+name="image_file"
+class="form-control"
+accept="image/*">
 
 </div>
 
 <div class="col-md-6">
 
-<label>Country</label>
+<label class="form-label">
+
+Manual PDF
+
+</label>
 
 <input
-name="country"
-class="form-control">
+type="file"
+name="manual_file"
+class="form-control"
+accept=".pdf">
 
 </div>
 
@@ -248,7 +352,11 @@ class="form-control">
 
 <div class="mt-3">
 
-<label>Description</label>
+<label class="form-label">
+
+Description
+
+</label>
 
 <textarea
 name="description"
@@ -262,9 +370,9 @@ class="form-control"></textarea>
 <div class="modal-footer">
 
 <button
+type="button"
 class="btn btn-secondary"
-data-bs-dismiss="modal"
-type="button">
+data-bs-dismiss="modal">
 
 Cancel
 
@@ -286,4 +394,5 @@ Save
 </div>
 
 </div>
+
 {% endblock %}

@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Authentication Routes
 """
 
@@ -19,6 +19,7 @@ from flask_login import (
 )
 
 from services.auth_service import auth_service
+from models.user import User
 
 
 auth_bp = Blueprint(
@@ -32,36 +33,64 @@ auth_bp = Blueprint(
 # Login
 # ==========================================================
 
-@auth_bp.route("/login", methods=["GET", "POST"])
+@auth_bp.route(
+    "/login",
+    methods=["GET", "POST"],
+)
 def login():
 
-    if request.method == "GET":
-        return render_template("login.html")
+    if request.method == "POST":
 
-    username = request.form.get("username", "").strip()
-    password = request.form.get("password", "")
+        username = request.form.get(
+            "username",
+            "",
+        ).strip()
 
-    if username == "" or password == "":
+        password = request.form.get(
+            "password",
+            "",
+        )
 
-        flash("Please enter username and password.")
+        user = auth_service.login(
 
-        return render_template("login.html")
+            username,
 
-    user = auth_service.login(
-        username,
-        password
-    )
+            password,
 
-    if user is None:
+        )
 
-        flash("Invalid username or password.")
+        if user:
 
-        return render_template("login.html")
+            login_user(
 
-    login_user(user)
+                User(user),
 
-    return redirect(
-        url_for("dashboard.index")
+                remember=True,
+
+            )
+
+            next_url = request.args.get("next")
+
+            if next_url:
+
+                return redirect(next_url)
+
+            return redirect(
+
+                url_for("dashboard.index")
+
+            )
+
+        flash(
+
+            "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+
+            "danger",
+
+        )
+
+    return render_template(
+        "login.html"
     )
 
 
@@ -75,8 +104,16 @@ def logout():
 
     logout_user()
 
-    flash("Logged out successfully.")
+    flash(
+
+        "ออกจากระบบเรียบร้อยแล้ว",
+
+        "success",
+
+    )
 
     return redirect(
+
         url_for("auth.login")
+
     )

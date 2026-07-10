@@ -1,119 +1,145 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Authentication Service
 """
 
-import bcrypt
+from werkzeug.security import (
+    check_password_hash,
+    generate_password_hash,
+)
 
-from flask_login import UserMixin
-from werkzeug.security import check_password_hash
+from repositories.user_repository import (
+    user_repository,
+)
 
-from repositories import user_repository
-
-
-# ==========================================================
-# User Model
-# ==========================================================
-
-class User(UserMixin):
-
-    def __init__(self, row):
-
-        self.id = row["id"]
-
-        self.username = row["username"]
-
-        self.fullname = row["fullname"] or ""
-
-        self.role = row["role"] or "user"
-
-    @property
-    def is_active(self):
-
-        return True
-
-
-# ==========================================================
-# Authentication
-# ==========================================================
 
 class AuthService:
+
+    # ==========================================================
+    # Login
+    # ==========================================================
 
     def login(self, username, password):
 
         user = user_repository.login(username)
 
-        if user is None:
+        if not user:
             return None
 
-        stored = user["password"]
+        db_password = user["password"]
 
-        # --------------------------------------------------
-        # BCrypt
-        # --------------------------------------------------
+        # รองรับทั้ง Password แบบ Hash และ Plain Text
+        try:
 
-        if stored.startswith("$2"):
+            if db_password.startswith(("pbkdf2:", "scrypt:")):
 
-            if not bcrypt.checkpw(
+                if not check_password_hash(
+                    db_password,
+                    password,
+                ):
+                    return None
 
-                password.encode(),
+            else:
 
-                stored.encode()
+                if db_password != password:
+                    return None
 
-            ):
+        except Exception:
 
+            if db_password != password:
                 return None
 
-        # --------------------------------------------------
-        # Werkzeug
-        # --------------------------------------------------
+        return user
 
-        elif stored.startswith(("pbkdf2:", "scrypt:")):
+    # ==========================================================
+    # Create User
+    # ==========================================================
 
-            if not check_password_hash(
+    def create_user(self, data):
 
-                stored,
+        data = dict(data)
 
-                password
+        data["password"] = generate_password_hash(
+            data["password"]
+        )
 
-            ):
+        return user_repository.create(data)
 
-                return None
+    # ==========================================================
+    # Change Password
+    # ==========================================================
 
-        # --------------------------------------------------
-        # Plain Text
-        # --------------------------------------------------
+    def change_password(
 
-        else:
+        self,
 
-            if stored != password:
+        user_id,
 
-                return None
+        new_password,
 
-        return User(user)
+    ):
 
-    def logout(self):
+        password = generate_password_hash(
+            new_password
+        )
 
-        return True
+        user_repository.change_password(
 
-    def current_user(self, user_id):
+            user_id,
 
-        return load_user(user_id)
+            password,
 
+        )
 
-# ==========================================================
-# Flask Login
-# ==========================================================
+    # ==========================================================
+    # Get
+    # ==========================================================
 
-def load_user(user_id):
+    def get(self, user_id):
 
-    row = user_repository.get(int(user_id))
+        return user_repository.get(user_id)
 
-    if row is None:
+    def get_all(self):
 
-        return None
+        return user_repository.get_all()
 
-    return User(row)
+    # ==========================================================
+    # Update
+    # ==========================================================
+
+    def update(self, user_id, data):
+
+        user_repository.update(
+
+            user_id,
+
+            data,
+
+        )
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
+
+    def delete(self, user_id):
+
+        user_repository.delete(user_id)
 
 
 auth_service = AuthService()
+# ==========================================================
+# Flask-Login
+# ==========================================================
+
+from repositories.user_repository import user_repository
+from models.user import User
+
+
+def load_user(user_id):
+
+    user = user_repository.get(int(user_id))
+
+    if not user:
+        return None
+
+    return User(user)

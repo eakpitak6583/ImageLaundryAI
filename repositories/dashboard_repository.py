@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Dashboard Repository
 """
 
@@ -29,7 +29,7 @@ class DashboardRepository(BaseRepository):
 
         row = self.fetch_one("""
             SELECT COUNT(*) AS total
-            FROM machine_instances
+            FROM machines
         """)
 
         return row["total"] if row else 0
@@ -92,7 +92,6 @@ class DashboardRepository(BaseRepository):
         row = self.fetch_one("""
             SELECT COUNT(*) AS total
             FROM technicians
-            WHERE active = 1
         """)
 
         return row["total"] if row else 0

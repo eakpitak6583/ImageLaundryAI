@@ -2,38 +2,116 @@
 
 {% block content %}
 
-<h2>Customers</h2>
+<div class="card shadow-sm">
 
-<table class="table table-bordered table-striped">
+    <div class="card-header bg-primary text-white">
 
-<thead>
+        <div class="d-flex justify-content-between align-items-center">
 
-<tr>
+            <h4 class="mb-0">
+                <i class="bi bi-buildings"></i>
+                Customer Management
+            </h4>
 
-<th>ID</th>
+            <form method="GET"
+                  action="{{ url_for('customer.index') }}"
+                  class="d-flex">
 
-<th>Customer</th>
+                <input
+                    type="text"
+                    name="q"
+                    class="form-control form-control-sm me-2"
+                    placeholder="Search..."
+                    value="{{ keyword }}">
 
-</tr>
+                <button
+                    class="btn btn-light btn-sm"
+                    type="submit">
 
-</thead>
+                    <i class="bi bi-search"></i>
 
-<tbody>
+                </button>
 
-{% for c in customers %}
+            </form>
 
-<tr>
+        </div>
 
-<td>{{ c[0] }}</td>
+    </div>
 
-<td>{{ c[1] }}</td>
+    <div class="card-body p-0">
 
-</tr>
+        <table class="table table-hover table-striped mb-0">
 
-{% endfor %}
+            <thead class="table-light">
 
-</tbody>
+                <tr>
 
-</table>
+                    <th width="70">ID</th>
+
+                    <th>Customer Name</th>
+
+                    <th>Contact</th>
+
+                    <th>Phone</th>
+
+                    <th>Email</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% if customers %}
+
+                {% for c in customers %}
+
+                <tr>
+
+                    <td>{{ c["id"] }}</td>
+
+                    <td>
+
+                        <a href="{{ url_for('customer.detail',
+                                customer_id=c['id']) }}">
+
+                            {{ c["customer_name"] }}
+
+                        </a>
+
+                    </td>
+
+                    <td>{{ c["contact"] }}</td>
+
+                    <td>{{ c["phone"] }}</td>
+
+                    <td>{{ c["email"] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="5"
+                        class="text-center text-muted py-4">
+
+                        No customer data found.
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
 
 {% endblock %}

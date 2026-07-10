@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Customer Routes
 """
 
@@ -9,6 +9,7 @@ from flask import (
     request,
     redirect,
     url_for,
+    flash,
 )
 
 from flask_login import login_required
@@ -22,6 +23,10 @@ customer_bp = Blueprint(
     url_prefix="/customers",
 )
 
+
+# ==========================================================
+# Customer List
+# ==========================================================
 
 @customer_bp.route("/", methods=["GET"])
 @login_required
@@ -41,11 +46,26 @@ def index():
     )
 
 
+# ==========================================================
+# Customer Detail
+# ==========================================================
+
 @customer_bp.route("/<int:customer_id>", methods=["GET"])
 @login_required
 def detail(customer_id):
 
     customer = customer_service.get(customer_id)
+
+    if not customer:
+
+        flash(
+            "Customer not found.",
+            "warning",
+        )
+
+        return redirect(
+            url_for("customer.index")
+        )
 
     return render_template(
         "customer_detail.html",
@@ -53,25 +73,72 @@ def detail(customer_id):
     )
 
 
+# ==========================================================
+# Create Customer
+# ==========================================================
+
 @customer_bp.route("/create", methods=["POST"])
 @login_required
 def create():
 
-    customer_service.create(request.form)
+    result = customer_service.create(
+        request.form
+    )
+
+    if result.get("success"):
+
+        flash(
+            "Customer created successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to create customer.",
+            ),
+            "danger",
+        )
 
     return redirect(
         url_for("customer.index")
     )
 
 
-@customer_bp.route("/<int:customer_id>/update", methods=["POST"])
+# ==========================================================
+# Update Customer
+# ==========================================================
+
+@customer_bp.route(
+    "/<int:customer_id>/update",
+    methods=["POST"],
+)
 @login_required
 def update(customer_id):
 
-    customer_service.update(
+    result = customer_service.update(
         customer_id,
         request.form,
     )
+
+    if result.get("success"):
+
+        flash(
+            "Customer updated successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to update customer.",
+            ),
+            "danger",
+        )
 
     return redirect(
         url_for(
@@ -81,11 +148,37 @@ def update(customer_id):
     )
 
 
-@customer_bp.route("/<int:customer_id>/delete", methods=["POST"])
+# ==========================================================
+# Delete Customer
+# ==========================================================
+
+@customer_bp.route(
+    "/<int:customer_id>/delete",
+    methods=["POST"],
+)
 @login_required
 def delete(customer_id):
 
-    customer_service.delete(customer_id)
+    result = customer_service.delete(
+        customer_id
+    )
+
+    if result.get("success"):
+
+        flash(
+            "Customer deleted successfully.",
+            "success",
+        )
+
+    else:
+
+        flash(
+            result.get(
+                "message",
+                "Unable to delete customer.",
+            ),
+            "danger",
+        )
 
     return redirect(
         url_for("customer.index")
