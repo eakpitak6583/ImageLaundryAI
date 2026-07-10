@@ -1,5 +1,5 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Customer Repository
 """
 
@@ -17,7 +17,7 @@ class CustomerRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM customers
-            ORDER BY customer_name
+            ORDER BY name
         """)
 
     def get(self, customer_id):
@@ -36,19 +36,99 @@ class CustomerRepository(BaseRepository):
             SELECT *
             FROM customers
             WHERE
-                customer_name LIKE ?
-                OR contact LIKE ?
+
+                name LIKE ?
+
+                OR code LIKE ?
+
                 OR address LIKE ?
+
+                OR contact_person LIKE ?
+
                 OR phone LIKE ?
-                OR email LIKE ?
-            ORDER BY customer_name
+
+            ORDER BY name
         """, (
+
             keyword,
+
             keyword,
+
             keyword,
+
             keyword,
+
             keyword,
+
         ))
+
+    # ==========================================================
+    # Find
+    # ==========================================================
+
+    def find_by_name(self, name):
+
+        return self.fetch_one("""
+            SELECT *
+            FROM customers
+            WHERE LOWER(name)=LOWER(?)
+            LIMIT 1
+        """, (name.strip(),))
+
+    def find_like_name(self, name):
+
+        keyword = f"%{name.strip()}%"
+
+        return self.fetch_one("""
+            SELECT *
+            FROM customers
+            WHERE LOWER(name) LIKE LOWER(?)
+            LIMIT 1
+        """, (keyword,))
+
+    # ==========================================================
+    # Find or Create
+    # ==========================================================
+
+    def find_or_create(self, name):
+
+        if not name:
+
+            return None
+
+        customer = self.find_by_name(name)
+
+        if customer:
+
+            return customer["id"]
+
+        customer = self.find_like_name(name)
+
+        if customer:
+
+            return customer["id"]
+
+        customer_id = self.execute("""
+
+            INSERT INTO customers
+            (
+
+                name
+
+            )
+
+            VALUES
+            (
+                ?
+            )
+
+        """, (
+
+            name.strip(),
+
+        ))
+
+        return customer_id
 
     # ==========================================================
     # Create
@@ -57,32 +137,42 @@ class CustomerRepository(BaseRepository):
     def create(self, data):
 
         return self.execute("""
+
             INSERT INTO customers
             (
-                customer_name,
+
+                code,
+
+                name,
+
                 address,
-                contact,
+
+                contact_person,
+
                 phone,
-                email,
-                note
+
+                email
+
             )
+
             VALUES
             (
                 ?,?,?,?,?,?
             )
+
         """, (
 
-            data.get("customer_name"),
+            data.get("code"),
+
+            data.get("name"),
 
             data.get("address"),
 
-            data.get("contact"),
+            data.get("contact_person"),
 
             data.get("phone"),
 
             data.get("email"),
-
-            data.get("note"),
 
         ))
 
@@ -93,37 +183,40 @@ class CustomerRepository(BaseRepository):
     def update(self, customer_id, data):
 
         self.execute("""
+
             UPDATE customers
+
             SET
 
-                customer_name = ?,
+                code=?,
 
-                address = ?,
+                name=?,
 
-                contact = ?,
+                address=?,
 
-                phone = ?,
+                contact_person=?,
 
-                email = ?,
+                phone=?,
 
-                note = ?,
+                email=?,
 
-                updated_at = CURRENT_TIMESTAMP
+                updated_at=CURRENT_TIMESTAMP
 
-            WHERE id = ?
+            WHERE id=?
+
         """, (
 
-            data.get("customer_name"),
+            data.get("code"),
+
+            data.get("name"),
 
             data.get("address"),
 
-            data.get("contact"),
+            data.get("contact_person"),
 
             data.get("phone"),
 
             data.get("email"),
-
-            data.get("note"),
 
             customer_id,
 
@@ -136,9 +229,14 @@ class CustomerRepository(BaseRepository):
     def delete(self, customer_id):
 
         self.execute("""
-            DELETE FROM customers
-            WHERE id = ?
-        """, (customer_id,))
+            DELETE
+            FROM customers
+            WHERE id=?
+        """, (
+
+            customer_id,
+
+        ))
 
 
 customer_repository = CustomerRepository()
