@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Customers</h2>
+
+<table class="table table-bordered table-striped">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+
+<th>Customer</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for c in customers %}
+
+<tr>
+
+<td>{{ c[0] }}</td>
+
+<td>{{ c[1] }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+{% endblock %}

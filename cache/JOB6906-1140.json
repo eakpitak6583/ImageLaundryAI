@@ -1,0 +1,10 @@
+{
+  "job_no": "JOB6906-1140",
+  "machine_model": "DI225",
+  "complaint": "steam ไม่เข้า",
+  "detail": "เครื่องซักผ้าติดเชื้อ 225 ตรวจสอบเบื้องต้นพบโซลินอยด์วาล์วไม่ทำงาน",
+  "repair_action": "เปลี่ยน solenoid valve",
+  "result": "แก้ไขสำเร็จ",
+  "sap_no": "",
+  "serial_no": "A225514100500"
+}

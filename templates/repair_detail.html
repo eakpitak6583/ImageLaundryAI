@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    Repair Detail
+</h2>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <table class="table table-bordered">
+
+            <tr>
+                <th width="220">Job No.</th>
+                <td>{{ repair[1] }}</td>
+            </tr>
+
+            <tr>
+                <th>Machine Model</th>
+                <td>{{ repair[2] }}</td>
+            </tr>
+
+            <tr>
+                <th>Complaint</th>
+                <td>{{ repair[3] }}</td>
+            </tr>
+
+            <tr>
+                <th>Detail</th>
+                <td style="white-space: pre-wrap;">
+                    {{ repair[4] }}
+                </td>
+            </tr>
+
+            <tr>
+                <th>Repair Action</th>
+                <td style="white-space: pre-wrap;">
+                    {{ repair[5] }}
+                </td>
+            </tr>
+
+            <tr>
+                <th>Result</th>
+                <td>{{ repair[6] }}</td>
+            </tr>
+
+            <tr>
+                <th>SAP No.</th>
+                <td>{{ repair[7] }}</td>
+            </tr>
+
+            <tr>
+                <th>Serial No.</th>
+                <td>{{ repair[8] }}</td>
+            </tr>
+
+            <tr>
+                <th>Report File</th>
+                <td>{{ repair[9] }}</td>
+            </tr>
+
+            <tr>
+                <th>Created At</th>
+                <td>{{ repair[10] }}</td>
+            </tr>
+
+        </table>
+
+        <a href="/repairs"
+           class="btn btn-secondary">
+
+            ← Back
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

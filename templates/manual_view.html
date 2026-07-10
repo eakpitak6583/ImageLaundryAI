@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>
+
+{{ manual.name }}
+
+</h2>
+
+<hr>
+
+<div class="mb-3">
+
+<a
+
+class="btn btn-success"
+
+href="/static/pdf/{{ manual.file }}"
+
+target="_blank">
+
+Open PDF
+
+</a>
+
+</div>
+
+<iframe
+
+src="/static/pdf/{{ manual.file }}"
+
+width="100%"
+
+height="900"
+
+style="border:1px solid #ccc">
+
+</iframe>
+
+{% endblock %}

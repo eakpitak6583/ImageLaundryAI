@@ -1,0 +1,10 @@
+{
+  "job_no": "JOB6906-1125",
+  "machine_model": "",
+  "complaint": "ติดตั้งระบบ IOT",
+  "detail": "ติดตั้งระบบ IOT",
+  "repair_action": "ติดตั้งตู้ IOT เดินระบบไฟ CT, Power Meter เครื่องซักผ้าและเครื่องอบผ้า เดินสายสัญญาณ Modbus RTU RS485 เดินท่อและสาย LAN เพิ่ม เดินระบบไฟกล้อง IOT เพิ่มทั้งฝั่งซักและอบ พร้อมเทสระบบ",
+  "result": "Finish",
+  "sap_no": "",
+  "serial_no": ""
+}

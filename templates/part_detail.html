@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Part Detail</h2>
+
+<div class="card">
+
+<div class="card-body">
+
+<table class="table">
+
+<tr>
+<th>Model</th>
+<td>{{ part[1] }}</td>
+</tr>
+
+<tr>
+<th>Section</th>
+<td>{{ part[2] }}</td>
+</tr>
+
+<tr>
+<th>Page</th>
+<td>{{ part[3] }}</td>
+</tr>
+
+<tr>
+<th>Item</th>
+<td>{{ part[4] }}</td>
+</tr>
+
+<tr>
+<th>Part Number</th>
+<td>{{ part[5] }}</td>
+</tr>
+
+<tr>
+<th>Quantity</th>
+<td>{{ part[6] }}</td>
+</tr>
+
+<tr>
+<th>Description</th>
+<td>{{ part[7] }}</td>
+</tr>
+
+</table>
+
+<a href="/parts" class="btn btn-secondary">
+Back
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">
+🏠 LaundryBot Dashboard
+</h2>
+
+<!-- KPI -->
+<div class="row">
+
+    <div class="col-md-3 mb-3">
+        <div class="card border-primary shadow">
+            <div class="card-body text-center">
+                <h6>Customers</h6>
+                <h2>{{ data.customer_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card border-success shadow">
+            <div class="card-body text-center">
+                <h6>Machines</h6>
+                <h2>{{ data.machine_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card border-warning shadow">
+            <div class="card-body text-center">
+                <h6>Repair History</h6>
+                <h2>{{ data.repair_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card border-danger shadow">
+            <div class="card-body text-center">
+                <h6>Technicians</h6>
+                <h2>{{ data.technician_count }}</h2>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Top Machine / Customer -->
+<div class="row">
+
+    <div class="col-md-6">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header bg-primary text-white">
+                🔥 TOP Machine Failure
+            </div>
+
+            <table class="table table-striped mb-0">
+
+                <thead>
+
+                <tr>
+                    <th>Machine</th>
+                    <th width="100">Repair</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for row in data.top_machine %}
+
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header bg-success text-white">
+                🏥 TOP Customer
+            </div>
+
+            <table class="table table-striped mb-0">
+
+                <thead>
+
+                <tr>
+                    <th>Customer</th>
+                    <th width="100">Repair</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for row in data.top_customer %}
+
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Technician / Repair Trend -->
+<div class="row">
+
+    <div class="col-md-6">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header bg-warning">
+                👨‍🔧 Technician Ranking
+            </div>
+
+            <table class="table table-striped mb-0">
+
+                <thead>
+
+                <tr>
+                    <th>Technician</th>
+                    <th width="100">Jobs</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for row in data.top_technician %}
+
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <div class="card shadow mb-4">
+
+            <div class="card-header bg-info text-white">
+                📈 Repair Trend
+            </div>
+
+            <div class="card-body">
+
+                <canvas id="repairChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Latest Repair -->
+<div class="card shadow">
+
+    <div class="card-header bg-secondary text-white">
+        📝 Latest Repair
+    </div>
+
+    <table class="table table-hover mb-0">
+
+        <thead>
+
+        <tr>
+            <th>JOB</th>
+            <th>Machine</th>
+            <th>Problem</th>
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for row in data.latest_repair %}
+
+        <tr>
+
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<script>
+
+const labels = [
+
+{% for r in data.repair_by_month %}
+"{{ r[0] }}",
+{% endfor %}
+
+];
+
+const values = [
+
+{% for r in data.repair_by_month %}
+{{ r[1] }},
+{% endfor %}
+
+];
+
+new Chart(document.getElementById("repairChart"),{
+
+    type:"bar",
+
+    data:{
+
+        labels:labels,
+
+        datasets:[{
+
+            label:"Repair",
+
+            data:values
+
+        }]
+
+    },
+
+    options:{
+
+        responsive:true,
+
+        plugins:{
+
+            legend:{
+
+                display:false
+
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

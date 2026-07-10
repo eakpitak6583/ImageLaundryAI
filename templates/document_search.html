@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+
+    <h2>🔍 AI Document Search</h2>
+
+    <form
+        method="GET"
+        action="{{ url_for('documents.search') }}">
+
+        <div class="input-group mb-4">
+
+            <input
+                class="form-control"
+                name="q"
+                placeholder="Search..."
+                value="{{ keyword }}">
+
+            <button
+                class="btn btn-primary">
+
+                Search
+
+            </button>
+
+        </div>
+
+    </form>
+
+    {% if rows %}
+
+    <table class="table table-bordered table-hover">
+
+        <thead>
+
+        <tr>
+
+            <th>Filename</th>
+            <th>Page</th>
+            <th>Content</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for row in rows %}
+
+        <tr>
+
+            <td>{{ row["filename"] }}</td>
+
+            <td>{{ row["page"] }}</td>
+
+            <td style="white-space:pre-wrap">
+
+                {{ row["content"][:600] }}
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+        {% if keyword %}
+
+        <div class="alert alert-warning">
+
+            ไม่พบข้อมูล
+
+        </div>
+
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

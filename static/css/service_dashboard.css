@@ -1,0 +1,67 @@
+body{
+
+    background:#f5f6fa;
+
+}
+
+.card{
+
+    border:none;
+
+    border-radius:14px;
+
+    transition:.25s;
+
+}
+
+.card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 8px 18px rgba(0,0,0,.12);
+
+}
+
+.card-header{
+
+    font-weight:700;
+
+}
+
+.table td{
+
+    vertical-align:middle;
+
+}
+
+.table-hover tbody tr:hover{
+
+    background:#eef5ff;
+
+}
+
+h2{
+
+    font-weight:700;
+
+}
+
+.summary-number{
+
+    font-size:36px;
+
+    font-weight:bold;
+
+}
+
+.summary-title{
+
+    color:#777;
+
+}
+
+.btn-primary{
+
+    border-radius:8px;
+
+}

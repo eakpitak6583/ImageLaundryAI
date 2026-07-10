@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<div class="row">
+
+<!-- ===================================================== -->
+<!-- LEFT -->
+<!-- ===================================================== -->
+
+<div class="col-lg-4">
+
+<div class="card shadow-sm mb-4">
+
+<div class="card-header bg-primary text-white">
+
+Machine Image
+
+</div>
+
+<div class="card-body text-center">
+
+{% if machine.image_file %}
+
+<img
+
+src="{{ url_for('static', filename='uploads/machine_images/' ~ machine.image_file) }}"
+
+class="img-fluid rounded"
+
+style="max-height:350px;">
+
+{% else %}
+
+<div
+class="text-muted p-5">
+
+No Image
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+Quick Action
+
+</div>
+
+<div class="card-body d-grid gap-2">
+
+{% if machine.manual_file %}
+
+<a
+
+class="btn btn-danger"
+
+target="_blank"
+
+href="/uploads/manuals/{{ machine.manual_file }}">
+
+📖 Open Manual
+
+</a>
+
+{% endif %}
+
+<button
+
+class="btn btn-success"
+
+disabled>
+
+🤖 Ask AI
+
+</button>
+
+<button
+
+class="btn btn-secondary"
+
+disabled>
+
+🏷 Generate QR
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- RIGHT -->
+<!-- ===================================================== -->
+
+<div class="col-lg-8">
+
+<div class="card shadow-sm">
+
+<div class="card-header bg-primary text-white">
+
+Machine Specification
+
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<tr>
+
+<th width="220">
+
+Brand
+
+</th>
+
+<td>
+
+{{ machine.brand }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Model
+
+</th>
+
+<td>
+
+{{ machine.model }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Machine Type
+
+</th>
+
+<td>
+
+{{ machine.machine_type }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Category
+
+</th>
+
+<td>
+
+{{ machine.category }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Capacity
+
+</th>
+
+<td>
+
+{{ machine.capacity }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Fuel
+
+</th>
+
+<td>
+
+{{ machine.fuel_type }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Voltage
+
+</th>
+
+<td>
+
+{{ machine.voltage }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Phase
+
+</th>
+
+<td>
+
+{{ machine.phase }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Frequency
+
+</th>
+
+<td>
+
+{{ machine.frequency }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Manufacturer
+
+</th>
+
+<td>
+
+{{ machine.manufacturer }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Country
+
+</th>
+
+<td>
+
+{{ machine.country }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Description
+
+</th>
+
+<td>
+
+{{ machine.description }}
+
+</td>
+
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

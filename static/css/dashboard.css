@@ -1,0 +1,93 @@
+body{
+
+    background:#f5f6fa;
+
+}
+
+.card{
+
+    border:none;
+
+    border-radius:12px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+}
+
+.bg-dark{
+
+    min-height:100vh;
+
+}
+
+a{
+
+    text-decoration:none;
+
+}
+/* =========================================
+   Sidebar
+========================================= */
+
+.sidebar{
+
+    min-height:100vh;
+
+}
+
+.sidebar-link{
+
+    display:block;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:10px 12px;
+
+    margin-bottom:6px;
+
+    border-radius:8px;
+
+    transition:.2s;
+
+}
+
+.sidebar-link:hover{
+
+    background:#0d6efd;
+
+    color:white;
+
+    padding-left:18px;
+
+}
+
+.sidebar-link i{
+
+    width:22px;
+
+    display:inline-block;
+
+}
+/* ==========================================
+   Page Header
+========================================== */
+
+.page-title{
+
+    font-weight:700;
+
+}
+
+.page-subtitle{
+
+    color:#6c757d;
+
+}
+
+.page-header{
+
+    margin-bottom:25px;
+
+}

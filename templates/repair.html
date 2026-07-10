@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set title = "Repair History" %}
+{% set add_url = None %}
+
+{% include "components/page_header.html" %}
+{% include "components/search_box.html" %}
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <table class="table table-hover table-striped align-middle">
+
+            <thead class="table-primary">
+
+                <tr>
+
+                    <th width="90">JOB</th>
+
+                    <th width="120">Model</th>
+
+                    <th>Complaint</th>
+
+                    <th>Repair Action</th>
+
+                    <th>Result</th>
+
+                    <th width="80"></th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for r in repairs %}
+
+                <tr>
+
+                    <td>{{ r[1] }}</td>
+
+                    <td>{{ r[2] }}</td>
+
+                    <td>{{ r[3] }}</td>
+
+                    <td>{{ r[5] }}</td>
+
+                    <td>{{ r[6] }}</td>
+
+                    <td>
+
+                        <a
+                            href="/repairs/{{ r[0] }}"
+                            class="btn btn-primary btn-sm">
+
+                            View
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

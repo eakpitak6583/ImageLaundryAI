@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/ai_chat.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="chat-container">
+
+    <div class="card chat-card">
+
+        <div class="chat-header d-flex justify-content-between align-items-center">
+
+            <div>
+
+                <h4 class="mb-1">
+                    🤖 LaundryBot AI Assistant
+                </h4>
+
+                <small>
+                    AI สำหรับค้นหาคู่มือ วิเคราะห์งานซ่อม และตอบคำถามจากฐานข้อมูล
+                </small>
+
+            </div>
+
+            <span class="badge bg-success">
+                ONLINE
+            </span>
+
+        </div>
+
+        <div
+            id="chat-box"
+            class="chat-body">
+
+            <div class="chat-welcome">
+
+                <h4>
+                    ยินดีต้อนรับสู่ LaundryBot AI
+                </h4>
+
+                <p>
+                    คุณสามารถถามเกี่ยวกับ
+                </p>
+
+                <ul>
+
+                    <li>Machine Manual</li>
+
+                    <li>Repair History</li>
+
+                    <li>Part Number</li>
+
+                    <li>Error Code</li>
+
+                    <li>Preventive Maintenance</li>
+
+                    <li>Spare Parts</li>
+
+                </ul>
+
+                <hr>
+
+                <div class="mt-4">
+
+                    <button
+                        class="btn btn-outline-primary m-1"
+                        onclick="questionBox.value='Bearing A0-A004-163 คืออะไร';askAI();">
+
+                        Bearing
+
+                    </button>
+
+                    <button
+                        class="btn btn-outline-primary m-1"
+                        onclick="questionBox.value='Steam Trap อยู่หน้าไหน';askAI();">
+
+                        Steam Trap
+
+                    </button>
+
+                    <button
+                        class="btn btn-outline-primary m-1"
+                        onclick="questionBox.value='Inverter 40HP ใช้ Part Number อะไร';askAI();">
+
+                        Inverter
+
+                    </button>
+
+                    <button
+                        class="btn btn-outline-primary m-1"
+                        onclick="questionBox.value='Error E08 คืออะไร';askAI();">
+
+                        Error E08
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="chat-footer">
+
+            <div class="input-group">
+
+                <input
+
+                    id="question"
+
+                    class="form-control"
+
+                    placeholder="พิมพ์คำถาม..."
+
+                    autocomplete="off"
+
+                >
+
+                <button
+
+                    class="btn btn-primary"
+
+                    onclick="askAI()">
+
+                    <i class="bi bi-send"></i>
+
+                </button>
+
+                <button
+
+                    class="btn btn-danger"
+
+                    onclick="clearHistory()">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script
+src="{{ url_for('static', filename='js/ai_chat.js') }}">
+</script>
+
+{% endblock %}

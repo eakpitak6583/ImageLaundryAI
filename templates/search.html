@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Knowledge Search</h2>
+
+{% if result %}
+
+<h4>Parts</h4>
+
+<pre>{{ result.parts }}</pre>
+
+<hr>
+
+<h4>Manual</h4>
+
+<pre>{{ result.manual }}</pre>
+
+<hr>
+
+<h4>Repair</h4>
+
+<pre>{{ result.repair }}</pre>
+
+{% else %}
+
+<form>
+
+Model
+
+<input name="model">
+
+Keyword
+
+<input name="q">
+
+<button>
+
+Search
+
+</button>
+
+</form>
+
+{% endif %}
+
+{% endblock %}

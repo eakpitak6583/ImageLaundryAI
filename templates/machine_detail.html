@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>
+
+{{ machine[1] }}
+
+</h2>
+
+<hr>
+
+<table class="table">
+
+<tr>
+
+<th width="180">
+
+SAP
+
+</th>
+
+<td>
+
+{{ machine[2] }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Serial
+
+</th>
+
+<td>
+
+{{ machine[3] }}
+
+</td>
+
+</tr>
+
+<tr>
+
+<th>
+
+Customer
+
+</th>
+
+<td>
+
+{{ machine[4] }}
+
+</td>
+
+</tr>
+
+</table>
+
+<hr>
+
+<div class="row">
+
+<div class="col-md-3">
+
+<a
+
+class="btn btn-primary w-100">
+
+Repair History
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a
+
+class="btn btn-success w-100">
+
+Manual
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a
+
+class="btn btn-warning w-100">
+
+Spare Parts
+
+</a>
+
+</div>
+
+<div class="col-md-3">
+
+<a
+
+class="btn btn-danger w-100">
+
+AI Assistant
+
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

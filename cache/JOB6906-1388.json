@@ -1,0 +1,10 @@
+{
+  "job_no": "JOB6906-1388",
+  "machine_model": "NDFL100-30",
+  "complaint": "เครื่อง Boiler Fulton 200 hp (ACT) ไม่จุด เปลี่ยนอะไหล่ใหม่แล้วไม่หาย หน้าจอโชว์ Alarm Loc.d3 และ Loc.c12",
+  "detail": "โรงพยาบาลยะลา ตรวจสอบ Boiler Fulton จำนวน 2 เครื่อง No.NDFL100-30 S/N:F10412681A",
+  "repair_action": "เปลี่ยนชุด Display และ Controller และปรับตั้งค่าใหม่",
+  "result": "ทดสอบใช้งานได้ปกติ",
+  "sap_no": "",
+  "serial_no": "F10412681A"
+}

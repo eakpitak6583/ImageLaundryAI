@@ -1,0 +1,10 @@
+{
+  "job_no": "JOB6906-1142",
+  "machine_model": "DI225",
+  "complaint": "เครื่องซักผ้าติดเชื้อ 225 ลิตร เปิดวาล์วแล้วสตีมเข้าตลอดไม่ตัด",
+  "detail": "ตรวจสอบเบื้องต้นพบสตีมรั่วขณะเปิดวาล์ว เครื่องซักผ้าติดเชื้อ 225 ลิตร (ACT) solenoid valve steam",
+  "repair_action": "สลับทิศทาง main steam เข้า solenoid valve",
+  "result": "ใช้งานปรกติ",
+  "sap_no": "",
+  "serial_no": "A225514100500"
+}

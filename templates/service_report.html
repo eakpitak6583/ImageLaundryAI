@@ -1,0 +1,755 @@
+{% extends "base.html" %}
+
+{% block title %}
+
+Service Report Center
+
+{% endblock %}
+
+{% block head %}
+
+<link
+rel="stylesheet"
+href="{{ url_for('static', filename='css/service_report.css') }}">
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+{% set icon="bi bi-file-earmark-bar-graph-fill" %}
+{% set title="Service Report Center" %}
+{% set subtitle="AI Service History Search Engine" %}
+{% set add_url=None %}
+
+{% include "components/page_header.html" %}
+
+<!-- ====================================== -->
+<!-- SEARCH -->
+<!-- ====================================== -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-body">
+
+        <form method="POST">
+
+            <div class="row">
+
+                <div class="col-md-10">
+
+                    <input
+                        type="text"
+                        class="form-control form-control-lg"
+                        name="keyword"
+                        value="{{ keyword }}"
+                        placeholder="ค้นหา Job / SAP / Serial / Model / Complaint / Part Number"
+                        autofocus>
+
+                </div>
+
+                <div class="col-md-2 d-grid">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary btn-lg">
+
+                        <i class="bi bi-search"></i>
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ====================================== -->
+<!-- QUICK MENU -->
+<!-- ====================================== -->
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+
+        <button
+        class="btn btn-success w-100">
+
+            🤖 AI Analysis
+
+        </button>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <button
+        class="btn btn-warning w-100">
+
+            📄 Export PDF
+
+        </button>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <button
+        class="btn btn-info w-100">
+
+            📊 Export Excel
+
+        </button>
+
+    </div>
+
+    <div class="col-md-3">
+
+        <button
+        class="btn btn-secondary w-100">
+
+            🕒 Timeline
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- ====================================== -->
+<!-- RESULT -->
+<!-- ====================================== -->
+
+<div class="card shadow-sm">
+
+<div class="card-header bg-primary text-white">
+
+Search Result
+
+</div>
+
+<div class="card-body">
+
+<div class="table-responsive">
+
+<table class="table table-hover align-middle">
+
+<thead>
+
+<tr>
+
+<th>JOB</th>
+
+<th>MODEL</th>
+
+<th>COMPLAINT</th>
+
+<th>REPAIR</th>
+
+<th>RESULT</th>
+
+<th></th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% if repairs %}
+
+{% for row in repairs %}
+<tr>
+
+    <td>
+
+        {{ row[1] }}
+
+    </td>
+
+    <td>
+
+        <span class="badge bg-primary">
+
+            {{ row[2] }}
+
+        </span>
+
+    </td>
+
+    <td>
+
+        {{ row[3] }}
+
+    </td>
+
+    <td>
+
+        {{ row[5] }}
+
+    </td>
+
+    <td>
+
+        {% if row[6] %}
+
+            <span class="badge bg-success">
+
+                {{ row[6] }}
+
+            </span>
+
+        {% else %}
+
+            <span class="badge bg-secondary">
+
+                -
+
+            </span>
+
+        {% endif %}
+
+    </td>
+
+    <td>
+
+        <a
+            href="/repairs/{{ row[0] }}"
+            class="btn btn-sm btn-outline-primary">
+
+            <i class="bi bi-eye"></i>
+
+            View
+
+        </a>
+
+    </td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+
+    <td
+        colspan="6"
+        class="text-center py-5">
+
+        <i
+        class="bi bi-search"
+        style="font-size:48px;color:#999;"></i>
+
+        <br><br>
+
+        <h5>
+
+            ไม่พบข้อมูล
+
+        </h5>
+
+        <p class="text-muted">
+
+            ลองค้นหาด้วย
+
+            <br>
+
+            Job Number
+
+            |
+
+            SAP Number
+
+            |
+
+            Serial Number
+
+            |
+
+            Machine Model
+
+            |
+
+            Complaint
+
+            |
+
+            Part Number
+
+        </p>
+
+    </td>
+
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- SEARCH SUMMARY -->
+<!-- ===================================== -->
+
+{% if repairs %}
+
+<div class="row mt-4">
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm stat-card">
+
+            <div class="card-body">
+
+                <small>
+
+                    Search Result
+
+                </small>
+
+                <h2>
+
+                    {{ repairs|length }}
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm stat-card">
+
+            <div class="card-body">
+
+                <small>
+
+                    Keyword
+
+                </small>
+
+                <h5>
+
+                    {{ keyword }}
+
+                </h5>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow-sm stat-card">
+
+            <div class="card-body">
+
+                <small>
+
+                    Status
+
+                </small>
+
+                <br><br>
+
+                <span class="badge bg-success">
+
+                    Search Complete
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+<!-- ===================================== -->
+<!-- AI RECOMMENDATION -->
+<!-- ===================================== -->
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header bg-dark text-white">
+
+        🤖 AI Recommendation
+
+    </div>
+
+    <div class="card-body">
+
+        {% if keyword %}
+
+        <div class="alert alert-info">
+
+            <strong>Keyword :</strong>
+
+            {{ keyword }}
+
+        </div>
+
+        {% endif %}
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="ai-box">
+
+                    <h5>
+
+                        🔍 AI Suggestion
+
+                    </h5>
+
+                    <ul>
+
+                        <li>
+
+                            วิเคราะห์ Complaint ที่เกิดซ้ำ
+
+                        </li>
+
+                        <li>
+
+                            ตรวจสอบอะไหล่ที่เสียบ่อย
+
+                        </li>
+
+                        <li>
+
+                            เปรียบเทียบประวัติการซ่อม
+
+                        </li>
+
+                        <li>
+
+                            ค้นหา Manual ที่เกี่ยวข้อง
+
+                        </li>
+
+                        <li>
+
+                            แนะนำขั้นตอน Troubleshooting
+
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="ai-box">
+
+                    <h5>
+
+                        📊 Statistics
+
+                    </h5>
+
+                    <table class="table table-sm">
+
+                        <tr>
+
+                            <td>
+
+                                Search Result
+
+                            </td>
+
+                            <td class="text-end">
+
+                                {{ repairs|length }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+
+                                Keyword
+
+                            </td>
+
+                            <td class="text-end">
+
+                                {{ keyword }}
+
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td>
+
+                                Confidence
+
+                            </td>
+
+                            <td class="text-end">
+
+                                95%
+
+                            </td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- TOP FAILURE -->
+<!-- ===================================== -->
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header bg-danger text-white">
+
+        🔥 Common Failure Analysis
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-3">
+
+                <div class="stat-card">
+
+                    <h2>
+
+                        {{ repairs|length }}
+
+                    </h2>
+
+                    <small>
+
+                        Total Records
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="stat-card">
+
+                    <h2>
+
+                        {{ keyword }}
+
+                    </h2>
+
+                    <small>
+
+                        Search Keyword
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="stat-card">
+
+                    <h2>
+
+                        AI
+
+                    </h2>
+
+                    <small>
+
+                        Analysis Ready
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="stat-card">
+
+                    <h2>
+
+                        ✓
+
+                    </h2>
+
+                    <small>
+
+                        Database Connected
+
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ===================================== -->
+<!-- QUICK ACTION -->
+<!-- ===================================== -->
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-header bg-secondary text-white">
+
+        ⚡ Quick Action
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row g-3">
+
+            <div class="col-md-3">
+
+                <button
+                    class="btn btn-outline-primary w-100"
+                    type="button">
+
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+
+                    Export PDF
+
+                </button>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <button
+                    class="btn btn-outline-success w-100"
+                    type="button">
+
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    Export Excel
+
+                </button>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <button
+                    class="btn btn-outline-warning w-100"
+                    type="button">
+
+                    <i class="bi bi-robot"></i>
+
+                    AI Analysis
+
+                </button>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <button
+                    class="btn btn-outline-dark w-100"
+                    type="button">
+
+                    <i class="bi bi-clock-history"></i>
+
+                    Timeline
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ===================================== -->
+<!-- FOOTER -->
+<!-- ===================================== -->
+
+<div class="text-center text-muted mt-5 mb-3">
+
+    <small>
+
+        LaundryBot V4 • Service Report Center
+
+        <br>
+
+        AI Powered Maintenance Management System
+
+    </small>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script
+src="{{ url_for('static', filename='js/service_report.js') }}">
+</script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    console.log("LaundryBot Service Report Ready");
+
+});
+
+</script>
+
+{% endblock %}

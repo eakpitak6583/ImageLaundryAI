@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set title = "Parts" %}
+{% set add_url = None %}
+
+{% include "components/page_header.html" %}
+{% include "components/search_box.html" %}
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-primary">
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Model</th>
+                    <th>Part No.</th>
+                    <th>Part Name</th>
+                    <th>Stock</th>
+                    <th>Location</th>
+                    <th width="100">Action</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for p in parts %}
+
+                <tr>
+
+                    <td>{{ p.id }}</td>
+
+                    <td>{{ p.model }}</td>
+
+                    <td>{{ p.part_no }}</td>
+
+                    <td>{{ p.part_name }}</td>
+
+                    <td>{{ p.stock }}</td>
+
+                    <td>{{ p.location }}</td>
+
+                    <td>
+
+                        <a
+                            class="btn btn-sm btn-primary"
+                            href="{{ url_for('part.detail', part_id=p.id) }}"
+                        >
+                            View
+                        </a>
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

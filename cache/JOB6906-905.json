@@ -1,0 +1,10 @@
+{
+  "job_no": "JOB6906-905",
+  "machine_model": "SP185",
+  "complaint": "เครื่องซักสลัดอัตโนมัติ",
+  "detail": "เข้าตรวจเช็คการทำงานของเครื่อง SP185 ในส่วนของเครื่อง Housing",
+  "repair_action": "ตรวจเช็ค Housing + Bearing เครื่อง SP185",
+  "result": "Finish",
+  "sap_no": "",
+  "serial_no": ""
+}
