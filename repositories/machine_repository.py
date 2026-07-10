@@ -1,5 +1,5 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Machine Repository
 """
 
@@ -17,7 +17,7 @@ class MachineRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM machines
-            ORDER BY brand, model
+            ORDER BY machine_model
         """)
 
     def get(self, machine_id):
@@ -37,14 +37,18 @@ class MachineRepository(BaseRepository):
             FROM machines
             WHERE
 
-                brand LIKE ?
+                machine_model LIKE ?
 
-                OR model LIKE ?
+                OR sap_no LIKE ?
 
-                OR machine_type LIKE ?
+                OR serial_no LIKE ?
 
-            ORDER BY brand, model
+                OR location LIKE ?
+
+            ORDER BY machine_model
         """, (
+
+            keyword,
 
             keyword,
 
@@ -55,6 +59,110 @@ class MachineRepository(BaseRepository):
         ))
 
     # ==========================================================
+    # Find
+    # ==========================================================
+
+    def find_by_sap(self, sap_no):
+
+        if not sap_no:
+            return None
+
+        return self.fetch_one("""
+            SELECT *
+            FROM machines
+            WHERE sap_no = ?
+            LIMIT 1
+        """, (sap_no.strip(),))
+
+    def find_by_serial(self, serial_no):
+
+        if not serial_no:
+            return None
+
+        return self.fetch_one("""
+            SELECT *
+            FROM machines
+            WHERE serial_no = ?
+            LIMIT 1
+        """, (serial_no.strip(),))
+
+    def find_by_model(self, model):
+
+        if not model:
+            return None
+
+        return self.fetch_one("""
+            SELECT *
+            FROM machines
+            WHERE LOWER(machine_model)=LOWER(?)
+            LIMIT 1
+        """, (model.strip(),))
+
+    # ==========================================================
+    # Find or Create
+    # ==========================================================
+
+    def find_or_create(
+
+        self,
+
+        model,
+
+        sap_no="",
+
+        serial_no="",
+
+    ):
+
+        machine = self.find_by_sap(sap_no)
+
+        if machine:
+
+            return machine["id"]
+
+        machine = self.find_by_serial(serial_no)
+
+        if machine:
+
+            return machine["id"]
+
+        machine = self.find_by_model(model)
+
+        if machine:
+
+            return machine["id"]
+
+        machine_id = self.execute("""
+
+            INSERT INTO machines
+            (
+
+                machine_model,
+
+                sap_no,
+
+                serial_no
+
+            )
+
+            VALUES
+            (
+                ?,?,?
+            )
+
+        """, (
+
+            model,
+
+            sap_no,
+
+            serial_no,
+
+        ))
+
+        return machine_id
+
+    # ==========================================================
     # Create
     # ==========================================================
 
@@ -62,29 +170,41 @@ class MachineRepository(BaseRepository):
 
         return self.execute("""
 
-            INSERT INTO machines(
+            INSERT INTO machines
+            (
 
-                brand,
+                machine_model,
 
-                model,
+                sap_no,
 
-                machine_type,
+                serial_no,
 
-                manual_file
+                customer_id,
+
+                location,
+
+                machine_master_id
 
             )
 
-            VALUES(?,?,?,?)
+            VALUES
+            (
+                ?,?,?,?,?,?
+            )
 
         """, (
 
-            data.get("brand"),
+            data.get("machine_model"),
 
-            data.get("model"),
+            data.get("sap_no"),
 
-            data.get("machine_type"),
+            data.get("serial_no"),
 
-            data.get("manual_file"),
+            data.get("customer_id"),
+
+            data.get("location"),
+
+            data.get("machine_master_id"),
 
         ))
 
@@ -100,27 +220,35 @@ class MachineRepository(BaseRepository):
 
             SET
 
-                brand = ?,
+                machine_model=?,
 
-                model = ?,
+                sap_no=?,
 
-                machine_type = ?,
+                serial_no=?,
 
-                manual_file = ?,
+                customer_id=?,
 
-                updated_at = CURRENT_TIMESTAMP
+                location=?,
 
-            WHERE id = ?
+                machine_master_id=?,
+
+                updated_at=CURRENT_TIMESTAMP
+
+            WHERE id=?
 
         """, (
 
-            data.get("brand"),
+            data.get("machine_model"),
 
-            data.get("model"),
+            data.get("sap_no"),
 
-            data.get("machine_type"),
+            data.get("serial_no"),
 
-            data.get("manual_file"),
+            data.get("customer_id"),
+
+            data.get("location"),
+
+            data.get("machine_master_id"),
 
             machine_id,
 
@@ -133,11 +261,9 @@ class MachineRepository(BaseRepository):
     def delete(self, machine_id):
 
         self.execute("""
-
-            DELETE FROM machines
-
-            WHERE id = ?
-
+            DELETE
+            FROM machines
+            WHERE id=?
         """, (
 
             machine_id,
