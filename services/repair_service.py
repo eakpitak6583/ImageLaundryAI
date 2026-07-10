@@ -1,15 +1,19 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Repair Service
 """
 
-from repositories import repair_repository
+from repositories.repair_repository import (
+    repair_repository,
+)
+
 from services.base_service import BaseService
 
 
 class RepairService(BaseService):
 
     def __init__(self):
+
         self.repo = repair_repository
 
     # ==========================================================
@@ -17,22 +21,20 @@ class RepairService(BaseService):
     # ==========================================================
 
     def get_all(self):
+
         return self.repo.get_all()
 
     def get(self, repair_id):
+
         return self.repo.get(repair_id)
 
     def search(self, keyword):
+
         return self.repo.search(keyword)
 
     def get_by_machine(self, machine_id):
+
         return self.repo.get_by_machine(machine_id)
-
-    def get_by_customer(self, customer_id):
-        return self.repo.get_by_customer(customer_id)
-
-    def get_by_technician(self, technician_id):
-        return self.repo.get_by_technician(technician_id)
 
     # ==========================================================
     # Create
@@ -40,17 +42,35 @@ class RepairService(BaseService):
 
     def create(self, data):
 
-        required_fields = [
-            "job_no",
-            "machine_id",
-            "customer_id",
-            "technician_id",
-            "complaint",
-        ]
+        if not data.get("job_no"):
 
-        for field in required_fields:
-            if not data.get(field):
-                return self.error(f"{field} is required")
+            return self.error(
+                "Job No is required"
+            )
+
+        if not data.get("machine_id"):
+
+            return self.error(
+                "Machine is required"
+            )
+
+        if not data.get("customer_id"):
+
+            return self.error(
+                "Customer is required"
+            )
+
+        if not data.get("technician_id"):
+
+            return self.error(
+                "Technician is required"
+            )
+
+        if not data.get("complaint"):
+
+            return self.error(
+                "Complaint is required"
+            )
 
         repair_id = self.repo.create(data)
 
@@ -62,12 +82,20 @@ class RepairService(BaseService):
 
     def update(self, repair_id, data):
 
-        if not self.repo.get(repair_id):
-            return self.error("Repair not found")
+        repair = self.repo.get(repair_id)
 
-        self.repo.update(repair_id, data)
+        if not repair:
 
-        return self.success(repair_id)
+            return self.error(
+                "Repair not found"
+            )
+
+        self.repo.update(
+            repair_id,
+            data,
+        )
+
+        return self.success()
 
     # ==========================================================
     # Delete
@@ -75,10 +103,17 @@ class RepairService(BaseService):
 
     def delete(self, repair_id):
 
-        if not self.repo.get(repair_id):
-            return self.error("Repair not found")
+        repair = self.repo.get(repair_id)
 
-        self.repo.delete(repair_id)
+        if not repair:
+
+            return self.error(
+                "Repair not found"
+            )
+
+        self.repo.delete(
+            repair_id
+        )
 
         return self.success()
 

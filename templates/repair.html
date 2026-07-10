@@ -3,8 +3,6 @@
 {% block content %}
 
 {% set title = "Repair History" %}
-{% set add_url = None %}
-
 {% include "components/page_header.html" %}
 {% include "components/search_box.html" %}
 
@@ -18,17 +16,17 @@
 
                 <tr>
 
-                    <th width="90">JOB</th>
+                    <th width="110">Job No.</th>
 
-                    <th width="120">Model</th>
+                    <th width="180">Machine Model</th>
 
                     <th>Complaint</th>
 
                     <th>Repair Action</th>
 
-                    <th>Result</th>
+                    <th width="140">Result</th>
 
-                    <th width="80"></th>
+                    <th width="90"></th>
 
                 </tr>
 
@@ -36,24 +34,46 @@
 
             <tbody>
 
-            {% for r in repairs %}
+            {% if repairs %}
+
+                {% for r in repairs %}
 
                 <tr>
 
-                    <td>{{ r[1] }}</td>
+                    <td>
 
-                    <td>{{ r[2] }}</td>
+                        {{ r.job_no }}
 
-                    <td>{{ r[3] }}</td>
+                    </td>
 
-                    <td>{{ r[5] }}</td>
+                    <td>
 
-                    <td>{{ r[6] }}</td>
+                        {{ r.machine_model }}
+
+                    </td>
+
+                    <td>
+
+                        {{ r.complaint }}
+
+                    </td>
+
+                    <td>
+
+                        {{ r.repair_action }}
+
+                    </td>
+
+                    <td>
+
+                        {{ r.result }}
+
+                    </td>
 
                     <td>
 
                         <a
-                            href="/repairs/{{ r[0] }}"
+                            href="{{ url_for('repair.detail', repair_id=r.id) }}"
                             class="btn btn-primary btn-sm">
 
                             View
@@ -64,7 +84,21 @@
 
                 </tr>
 
-            {% endfor %}
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center text-muted py-4">
+
+                        No repair history found.
+
+                    </td>
+
+                </tr>
+
+            {% endif %}
 
             </tbody>
 

@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Repair Repository
 """
 
@@ -17,7 +17,7 @@ class RepairRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM repair_history
-            ORDER BY repair_date DESC, id DESC
+            ORDER BY created_at DESC, id DESC
         """)
 
     def get(self, repair_id):
@@ -25,7 +25,7 @@ class RepairRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM repair_history
-            WHERE id=?
+            WHERE id = ?
         """, (repair_id,))
 
     def search(self, keyword):
@@ -37,16 +37,32 @@ class RepairRepository(BaseRepository):
             FROM repair_history
             WHERE
 
-                symptom LIKE ?
+                job_no LIKE ?
 
-                OR cause LIKE ?
+                OR machine_model LIKE ?
 
-                OR solution LIKE ?
+                OR complaint LIKE ?
 
-                OR technician LIKE ?
+                OR detail LIKE ?
 
-            ORDER BY repair_date DESC, id DESC
+                OR repair_action LIKE ?
+
+                OR result LIKE ?
+
+                OR sap_no LIKE ?
+
+                OR serial_no LIKE ?
+
+            ORDER BY created_at DESC, id DESC
         """, (
+
+            keyword,
+
+            keyword,
+
+            keyword,
+
+            keyword,
 
             keyword,
 
@@ -63,8 +79,8 @@ class RepairRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM repair_history
-            WHERE machine_id=?
-            ORDER BY repair_date DESC
+            WHERE machine_id = ?
+            ORDER BY created_at DESC
         """, (machine_id,))
 
     # ==========================================================
@@ -75,41 +91,65 @@ class RepairRepository(BaseRepository):
 
         return self.execute("""
 
-            INSERT INTO repair_history(
+            INSERT INTO repair_history
+            (
 
-                machine_id,
+                job_no,
 
-                repair_date,
+                machine_model,
 
-                symptom,
+                complaint,
 
-                cause,
+                detail,
 
-                solution,
+                repair_action,
 
-                technician,
+                result,
 
-                downtime
+                sap_no,
+
+                serial_no,
+
+                report_file,
+
+                customer_id,
+
+                technician_id,
+
+                machine_id
 
             )
 
-            VALUES(?,?,?,?,?,?,?)
+            VALUES
+            (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            )
 
         """, (
 
+            data.get("job_no"),
+
+            data.get("machine_model"),
+
+            data.get("complaint"),
+
+            data.get("detail"),
+
+            data.get("repair_action"),
+
+            data.get("result"),
+
+            data.get("sap_no"),
+
+            data.get("serial_no"),
+
+            data.get("report_file"),
+
+            data.get("customer_id"),
+
+            data.get("technician_id"),
+
             data.get("machine_id"),
-
-            data.get("repair_date"),
-
-            data.get("symptom"),
-
-            data.get("cause"),
-
-            data.get("solution"),
-
-            data.get("technician"),
-
-            data.get("downtime"),
 
         ))
 
@@ -125,37 +165,59 @@ class RepairRepository(BaseRepository):
 
             SET
 
-                machine_id=?,
+                job_no = ?,
 
-                repair_date=?,
+                machine_model = ?,
 
-                symptom=?,
+                complaint = ?,
 
-                cause=?,
+                detail = ?,
 
-                solution=?,
+                repair_action = ?,
 
-                technician=?,
+                result = ?,
 
-                downtime=?
+                sap_no = ?,
 
-            WHERE id=?
+                serial_no = ?,
+
+                report_file = ?,
+
+                customer_id = ?,
+
+                technician_id = ?,
+
+                machine_id = ?,
+
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
 
         """, (
 
+            data.get("job_no"),
+
+            data.get("machine_model"),
+
+            data.get("complaint"),
+
+            data.get("detail"),
+
+            data.get("repair_action"),
+
+            data.get("result"),
+
+            data.get("sap_no"),
+
+            data.get("serial_no"),
+
+            data.get("report_file"),
+
+            data.get("customer_id"),
+
+            data.get("technician_id"),
+
             data.get("machine_id"),
-
-            data.get("repair_date"),
-
-            data.get("symptom"),
-
-            data.get("cause"),
-
-            data.get("solution"),
-
-            data.get("technician"),
-
-            data.get("downtime"),
 
             repair_id,
 
@@ -171,7 +233,7 @@ class RepairRepository(BaseRepository):
 
             DELETE FROM repair_history
 
-            WHERE id=?
+            WHERE id = ?
 
         """, (
 

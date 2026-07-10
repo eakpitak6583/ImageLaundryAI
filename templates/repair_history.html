@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4 class="mb-0">
+
+                <i class="bi bi-tools"></i>
+
+                Repair Detail
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-bordered align-middle">
+
+                <tr>
+                    <th width="220">Job No.</th>
+                    <td>{{ repair.job_no }}</td>
+                </tr>
+
+                <tr>
+                    <th>Machine Model</th>
+                    <td>{{ repair.machine_model }}</td>
+                </tr>
+
+                <tr>
+                    <th>SAP No.</th>
+                    <td>{{ repair.sap_no or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Serial No.</th>
+                    <td>{{ repair.serial_no or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Complaint</th>
+                    <td>{{ repair.complaint or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Detail</th>
+                    <td>{{ repair.detail or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Repair Action</th>
+                    <td>{{ repair.repair_action or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Result</th>
+                    <td>{{ repair.result or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Customer ID</th>
+                    <td>{{ repair.customer_id or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Technician ID</th>
+                    <td>{{ repair.technician_id or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Machine ID</th>
+                    <td>{{ repair.machine_id or "-" }}</td>
+                </tr>
+
+                <tr>
+                    <th>Created</th>
+                    <td>{{ repair.created_at }}</td>
+                </tr>
+
+                <tr>
+                    <th>Updated</th>
+                    <td>{{ repair.updated_at }}</td>
+                </tr>
+
+                <tr>
+                    <th>Report File</th>
+
+                    <td>
+
+                        {% if repair.report_file %}
+
+                            <a
+                                href="/uploads/reports/{{ repair.report_file }}"
+                                target="_blank"
+                                class="btn btn-danger btn-sm">
+
+                                <i class="bi bi-file-earmark-pdf"></i>
+
+                                Open Report
+
+                            </a>
+
+                        {% else %}
+
+                            <span class="text-muted">
+
+                                No Report
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="mt-3">
+
+        <a
+            href="{{ url_for('repair.index') }}"
+            class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
