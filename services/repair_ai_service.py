@@ -62,3 +62,64 @@ IMPORTANT
 - ห้ามใส่ ```json
 
 """
+    # ==========================================================
+    # Read PDF
+    # ==========================================================
+
+    def read_pdf(
+
+        self,
+
+        filepath,
+
+    ):
+
+        logger.info(
+
+            "Reading PDF : %s",
+
+            filepath,
+
+        )
+
+        if not filepath:
+
+            raise ValueError(
+
+                "PDF path is empty."
+
+            )
+
+        text = pdf_service.read(
+
+            filepath
+
+        )
+
+        if text is None:
+
+            text = ""
+
+        text = str(
+
+            text
+
+        ).strip()
+
+        if text == "":
+
+            raise ValueError(
+
+                "Unable to extract text from PDF."
+
+            )
+
+        logger.info(
+
+            "PDF loaded successfully (%d characters)",
+
+            len(text),
+
+        )
+
+        return text
