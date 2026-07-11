@@ -270,7 +270,109 @@ def preview(
 
     )
 
+# ==========================================================
+# Confirm Import
+# ==========================================================
 
+@repair_bp.route(
+
+    "/confirm-import",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+def confirm_import():
+
+    data = request.form.to_dict()
+
+    try:
+
+        result = repair_service.create(
+
+            data,
+
+        )
+
+    except Exception as e:
+
+        flash(
+
+            str(e),
+
+            "danger",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.import_pdf",
+
+            )
+
+        )
+
+    if not result.get(
+
+        "success",
+
+    ):
+
+        flash(
+
+            result.get(
+
+                "message",
+
+                "Unable to import repair.",
+
+            ),
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.import_pdf",
+
+            )
+
+        )
+
+    flash(
+
+        "Repair imported successfully.",
+
+        "success",
+
+    )
+
+    return redirect(
+
+        url_for(
+
+            "repair.detail",
+
+            repair_id=result["data"],
+
+        )
+
+    )
+
+
+# ==========================================================
+# Create
+# ==========================================================
 # ==========================================================
 # Re Import PDF
 # ==========================================================
