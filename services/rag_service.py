@@ -390,7 +390,21 @@ PAGE : {page}
 
         if question == "":
 
-            return "กรุณาระบุคำถาม"
+            return {
+
+                "success": False,
+
+                "answer": "กรุณาระบุคำถาม",
+
+                "sources": [],
+
+                "documents": [],
+
+                "search_keyword": "",
+
+                "count": 0,
+
+            }
 
         logger.info(
 
@@ -400,13 +414,25 @@ PAGE : {page}
 
         )
 
-        knowledge = self.search(
+        search_result = self.search(
 
             question,
 
             top_k,
 
         )
+
+        documents = search_result[
+
+            "documents"
+
+        ]
+
+        knowledge = search_result[
+
+            "context"
+
+        ]
 
         if knowledge == "":
 
@@ -416,7 +442,21 @@ PAGE : {page}
 
             )
 
-            return "ไม่พบข้อมูลในฐานความรู้"
+            return {
+
+                "success": False,
+
+                "answer": "ไม่พบข้อมูลในฐานความรู้",
+
+                "sources": [],
+
+                "documents": [],
+
+                "search_keyword": question,
+
+                "count": 0,
+
+            }
 
         prompt = f"""
 คุณคือ LaundryBot V7 Enterprise
@@ -443,13 +483,13 @@ RULES
 
 1. ตอบเฉพาะข้อมูลที่อยู่ใน KNOWLEDGE
 
-2. หากไม่มีข้อมูลเพียงพอ ให้ตอบว่า
+2. หากไม่มีข้อมูลเพียงพอให้ตอบว่า
 
 "ไม่พบข้อมูลในฐานความรู้"
 
 3. ห้ามเดา
 
-4. หากอ้างอิงเอกสาร ให้ระบุ FILE และ PAGE ที่เกี่ยวข้อง
+4. หากอ้างอิงข้อมูลให้ระบุ FILE และ PAGE
 
 ตอบเป็นภาษาไทย
 """
@@ -464,7 +504,43 @@ RULES
 
             )
 
-            answer = response.output_text.strip()
+            answer = getattr(
+
+                response,
+
+                "output_text",
+
+                "",
+
+            ).strip()
+
+            if answer == "":
+
+                answer = "ไม่พบข้อมูลในฐานความรู้"
+
+            sources = []
+
+            for document in documents:
+
+                sources.append({
+
+                    "filename": document.metadata.get(
+
+                        "filename",
+
+                        "",
+
+                    ),
+
+                    "page": document.metadata.get(
+
+                        "page",
+
+                        0,
+
+                    ),
+
+                })
 
             logger.info(
 
@@ -472,7 +548,25 @@ RULES
 
             )
 
-            return answer
+            return {
+
+                "success": True,
+
+                "answer": answer,
+
+                "sources": sources,
+
+                "documents": documents,
+
+                "search_keyword": question,
+
+                "count": len(
+
+                    sources,
+
+                ),
+
+            }
 
         except Exception as e:
 
