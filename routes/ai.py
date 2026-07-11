@@ -3,8 +3,7 @@ LaundryBot V7 Enterprise
 AI Routes
 """
 
-import traceback
-from datetime import datetime
+import logging
 
 from flask import (
     Blueprint,
@@ -13,16 +12,26 @@ from flask import (
     request,
 )
 
-from flask_login import login_required
+from flask_login import (
+    login_required,
+)
 
-from config import Config
-from services.rag_service import rag_service
+from services.rag_service import (
+    rag_service,
+)
 
+logger = logging.getLogger(
+    __name__,
+)
 
 ai_bp = Blueprint(
+
     "ai",
+
     __name__,
+
     url_prefix="/ai",
+
 )
 
 
@@ -30,170 +39,180 @@ ai_bp = Blueprint(
 # AI Chat Page
 # ==========================================================
 
-@ai_bp.route("/")
+@ai_bp.route(
+
+    "/",
+
+)
+
 @login_required
+
 def index():
 
     return render_template(
-        "ai_chat.html"
+
+        "ai_chat.html",
+
     )
-
-
 # ==========================================================
 # AI Chat API
 # ==========================================================
 
 @ai_bp.route(
+
     "/chat",
-    methods=["POST"],
+
+    methods=[
+
+        "POST",
+
+    ],
+
 )
+
 @login_required
+
 def chat():
 
     try:
 
         payload = request.get_json(
-            silent=True
+
+            silent=True,
+
         ) or {}
 
-        question = payload.get(
-            "question",
-            ""
+        question = str(
+
+            payload.get(
+
+                "question",
+
+                "",
+
+            )
+
         ).strip()
 
-        if not question:
+        if question == "":
 
-            return jsonify({
+            return jsonify(
 
-                "success": False,
+                rag_service.empty_result(
 
-                "message": "กรุณาพิมพ์คำถาม",
+                    message="กรุณาพิมพ์คำถาม",
 
-                "answer": "",
+                )
 
-                "sources": [],
+            ), 400
 
-                "count": 0,
+        logger.info(
 
-                "search_keyword": "",
+            "AI Chat : %s",
 
-            }), 400
+            question,
 
-        result = rag_service.ask(question)
-
-        answer = result.get(
-            "answer",
-            ""
         )
 
-        sources = result.get(
-            "sources",
-            []
+        return jsonify(
+
+            rag_service.ask(
+
+                question,
+
+            )
+
         )
-
-        # ----------------------------------------------
-        # Search Keyword
-        # (รองรับ PDF Highlight ในอนาคต)
-        # ----------------------------------------------
-
-        search_keyword = result.get(
-            "search_keyword",
-            question
-        )
-
-        return jsonify({
-
-            "success": True,
-
-            "question": question,
-
-            "search_keyword": search_keyword,
-
-            "answer": answer,
-
-            "sources": sources,
-
-            "count": len(sources),
-
-            "model": Config.MODEL_NAME,
-
-            "service": "LaundryBot AI Enterprise",
-
-            "timestamp": datetime.now().isoformat(),
-
-        })
 
     except Exception as e:
 
-        traceback.print_exc()
+        logger.exception(
+
+            "AI Chat Error : %s",
+
+            e,
+
+        )
 
         return jsonify({
 
             "success": False,
 
-            "message": str(e),
-
             "answer": "",
+
+            "message": str(
+
+                e,
+
+            ),
 
             "sources": [],
 
-            "count": 0,
-
             "search_keyword": "",
 
+            "count": 0,
+
         }), 500
-
-
 # ==========================================================
 # Health Check
 # ==========================================================
 
-@ai_bp.route("/health")
+@ai_bp.route(
+
+    "/health",
+
+)
+
 @login_required
+
 def health():
 
-    return jsonify({
+    return jsonify(
 
-        "success": True,
+        rag_service.health(),
 
-        "service": "LaundryBot AI Enterprise",
-
-        "status": "ONLINE",
-
-        "model": Config.MODEL_NAME,
-
-        "rag": True,
-
-        "embedding": True,
-
-        "time": datetime.now().isoformat(),
-
-    })
-
-
+    )
 # ==========================================================
 # Search API
 # ==========================================================
 
 @ai_bp.route(
+
     "/search",
-    methods=["POST"],
+
+    methods=[
+
+        "POST",
+
+    ],
+
 )
+
 @login_required
+
 def search():
 
     try:
 
         payload = request.get_json(
-            silent=True
+
+            silent=True,
+
         ) or {}
 
-        keyword = payload.get(
-            "question",
-            ""
+        keyword = str(
+
+            payload.get(
+
+                "question",
+
+                "",
+
+            )
+
         ).strip()
 
-        if not keyword:
+        if keyword == "":
 
             return jsonify({
 
@@ -201,65 +220,384 @@ def search():
 
                 "message": "Keyword is required",
 
-                "count": 0,
+                "sources": [],
 
-                "results": []
+                "count": 0,
 
             }), 400
 
-        docs = rag_service.search(
-            keyword
+        logger.info(
+
+            "AI Search : %s",
+
+            keyword,
+
         )
 
-        results = []
+        return jsonify(
 
-        for doc in docs:
+            rag_service.search_json(
 
-            results.append({
+                keyword,
 
-                "filename": doc.metadata.get(
-                    "filename",
-                    ""
-                ),
+            )
 
-                "page": doc.metadata.get(
-                    "page",
-                    0
-                ),
-
-                "score": doc.metadata.get(
-                    "score",
-                    None
-                ),
-
-                "content": doc.page_content[:500],
-
-            })
-
-        return jsonify({
-
-            "success": True,
-
-            "keyword": keyword,
-
-            "count": len(results),
-
-            "results": results,
-
-        })
+        )
 
     except Exception as e:
 
-        traceback.print_exc()
+        logger.exception(
+
+            "AI Search Error : %s",
+
+            e,
+
+        )
 
         return jsonify({
 
             "success": False,
 
-            "message": str(e),
+            "message": str(
+
+                e,
+
+            ),
+
+            "sources": [],
 
             "count": 0,
 
-            "results": []
+        }), 500
+# ==========================================================
+# Version
+# ==========================================================
+
+@ai_bp.route(
+
+    "/version",
+
+)
+
+@login_required
+
+def version():
+
+    return jsonify(
+
+        rag_service.version(),
+
+    )
+
+
+# ==========================================================
+# Statistics
+# ==========================================================
+
+@ai_bp.route(
+
+    "/statistics",
+
+)
+
+@login_required
+
+def statistics():
+
+    return jsonify(
+
+        rag_service.statistics(),
+
+    )
+
+
+# ==========================================================
+# Ready
+# ==========================================================
+
+@ai_bp.route(
+
+    "/ready",
+
+)
+
+@login_required
+
+def ready():
+
+    return jsonify({
+
+        "success": True,
+
+        "ready": rag_service.is_ready(),
+
+    })
+
+
+# ==========================================================
+# Reload Vector
+# ==========================================================
+
+@ai_bp.route(
+
+    "/reload",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+
+def reload():
+
+    try:
+
+        rag_service.reload()
+
+        return jsonify({
+
+            "success": True,
+
+            "message": "Vector database reloaded successfully.",
+
+        })
+
+    except Exception as e:
+
+        logger.exception(
+
+            "Reload Vector Error : %s",
+
+            e,
+
+        )
+
+        return jsonify({
+
+            "success": False,
+
+            "message": str(
+
+                e,
+
+            ),
 
         }), 500
+# ==========================================================
+# Clear Vector Cache
+# ==========================================================
+
+@ai_bp.route(
+
+    "/clear-cache",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+
+def clear_cache():
+
+    try:
+
+        rag_service.clear_cache()
+
+        return jsonify({
+
+            "success": True,
+
+            "message": "Vector cache cleared.",
+
+        })
+
+    except Exception as e:
+
+        logger.exception(
+
+            "Clear Cache Error : %s",
+
+            e,
+
+        )
+
+        return jsonify({
+
+            "success": False,
+
+            "message": str(
+
+                e,
+
+            ),
+
+        }), 500
+
+
+# ==========================================================
+# AI Information
+# ==========================================================
+
+@ai_bp.route(
+
+    "/info",
+
+)
+
+@login_required
+
+def info():
+
+    return jsonify({
+
+        "success": True,
+
+        "health": rag_service.health(),
+
+        "version": rag_service.version(),
+
+        "statistics": rag_service.statistics(),
+
+        "ready": rag_service.is_ready(),
+
+    })
+
+
+# ==========================================================
+# Ping
+# ==========================================================
+
+@ai_bp.route(
+
+    "/ping",
+
+)
+
+def ping():
+
+    return jsonify({
+
+        "success": True,
+
+        "service": "LaundryBot AI",
+
+    })
+# ==========================================================
+# AI Status
+# ==========================================================
+
+@ai_bp.route(
+
+    "/status",
+
+)
+
+@login_required
+
+def status():
+
+    return jsonify({
+
+        "success": True,
+
+        "service": "LaundryBot AI",
+
+        "health": rag_service.health(),
+
+        "statistics": rag_service.statistics(),
+
+        "version": rag_service.version(),
+
+        "ready": rag_service.is_ready(),
+
+    })
+
+
+# ==========================================================
+# Warmup
+# ==========================================================
+
+@ai_bp.route(
+
+    "/warmup",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+
+def warmup():
+
+    try:
+
+        rag_service.load()
+
+        return jsonify({
+
+            "success": True,
+
+            "message": "Vector database loaded.",
+
+        })
+
+    except Exception as e:
+
+        logger.exception(
+
+            "Warmup Error : %s",
+
+            e,
+
+        )
+
+        return jsonify({
+
+            "success": False,
+
+            "message": str(
+
+                e,
+
+            ),
+
+        }), 500
+
+
+# ==========================================================
+# Test AI
+# ==========================================================
+
+@ai_bp.route(
+
+    "/test",
+
+)
+
+@login_required
+
+def test():
+
+    return jsonify({
+
+        "success": True,
+
+        "service": "LaundryBot AI",
+
+        "model": Config.MODEL_NAME,
+
+        "vector_ready": rag_service.is_ready(),
+
+    })
