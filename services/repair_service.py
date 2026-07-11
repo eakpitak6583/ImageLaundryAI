@@ -18,7 +18,11 @@ from services.repair_ai_service import (
 )
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(
+
+    __name__,
+
+)
 
 
 class RepairService(BaseService):
@@ -97,12 +101,10 @@ class RepairService(BaseService):
 
         )
 
-    
-            # ==========================================================
+    # ==========================================================
     # Create
     # ==========================================================
-
-    def create(
+        def create(
 
         self,
 
@@ -432,9 +434,7 @@ class RepairService(BaseService):
 
         )
 
-
-# ==========================================================
-# Singleton
-# ==========================================================
-
-repair_service = RepairService()
+    # ==========================================================
+    # Singleton
+    # ==========================================================
+    repair_service = RepairService()
