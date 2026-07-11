@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}
+Repair AI Preview
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header">
+
+            <h3>
+
+                AI Repair Preview
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <form
+
+                method="POST"
+
+                action="{{ url_for('repair.confirm_import') }}"
+
+            >
+
+                <input
+
+                    type="hidden"
+
+                    name="report_file"
+
+                    value="{{ repair.report_file }}"
+
+                >
+
+                <div class="row">
+                <div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Customer
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="customer"
+
+        value="{{ repair.customer }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Machine Model
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="machine_model"
+
+        value="{{ repair.machine_model }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Brand
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="brand"
+
+        value="{{ repair.brand }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Job No
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="job_no"
+
+        value="{{ repair.job_no }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        SAP No
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="sap_no"
+
+        value="{{ repair.sap_no }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Serial No
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="serial_no"
+
+        value="{{ repair.serial_no }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Technician
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="technician"
+
+        value="{{ repair.technician }}"
+
+    >
+
+</div>
+
+<div class="col-md-6 mb-3">
+
+    <label class="form-label">
+
+        Repair Date
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        name="repair_date"
+
+        value="{{ repair.repair_date }}"
+
+    >
+
+</div>
+<div class="col-12 mb-3">
+
+    <label class="form-label">
+
+        Complaint
+
+    </label>
+
+    <textarea
+
+        class="form-control"
+
+        name="complaint"
+
+        rows="3"
+
+    >{{ repair.complaint }}</textarea>
+
+</div>
+
+<div class="col-12 mb-3">
+
+    <label class="form-label">
+
+        Detail
+
+    </label>
+
+    <textarea
+
+        class="form-control"
+
+        name="detail"
+
+        rows="4"
+
+    >{{ repair.detail }}</textarea>
+
+</div>
+
+<div class="col-12 mb-3">
+
+    <label class="form-label">
+
+        Repair Action
+
+    </label>
+
+    <textarea
+
+        class="form-control"
+
+        name="repair_action"
+
+        rows="5"
+
+    >{{ repair.repair_action }}</textarea>
+
+</div>
+
+<div class="col-12 mb-4">
+
+    <label class="form-label">
+
+        Result
+
+    </label>
+
+    <textarea
+
+        class="form-control"
+
+        name="result"
+
+        rows="3"
+
+    >{{ repair.result }}</textarea>
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+    <label class="form-label">
+
+        Customer ID
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        value="{{ repair.customer_id }}"
+
+        readonly
+
+    >
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+    <label class="form-label">
+
+        Machine ID
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        value="{{ repair.machine_id }}"
+
+        readonly
+
+    >
+
+</div>
+
+<div class="col-md-4 mb-3">
+
+    <label class="form-label">
+
+        Technician ID
+
+    </label>
+
+    <input
+
+        type="text"
+
+        class="form-control"
+
+        value="{{ repair.technician_id }}"
+
+        readonly
+
+    >
+
+</div>
+<div class="col-12">
+
+    <hr>
+
+</div>
+
+<!-- ========================================= -->
+<!-- AI Summary -->
+<!-- ========================================= -->
+
+<div class="col-md-6 mb-4">
+
+    <div class="card border-success h-100">
+
+        <div class="card-header bg-success text-white">
+
+            AI Summary
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-sm mb-0">
+
+                <tr>
+
+                    <th width="40%">
+
+                        Document Type
+
+                    </th>
+
+                    <td>
+
+                        {{ repair.document_type }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Report File
+
+                    </th>
+
+                    <td class="text-break">
+
+                        {{ repair.report_file }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Job No
+
+                    </th>
+
+                    <td>
+
+                        {{ repair.job_no }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Machine
+
+                    </th>
+
+                    <td>
+
+                        {{ repair.machine_model }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Customer
+
+                    </th>
+
+                    <td>
+
+                        {{ repair.customer }}
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- AI Status -->
+<!-- ========================================= -->
+
+<div class="col-md-6 mb-4">
+
+    <div class="card border-primary h-100">
+
+        <div class="card-header bg-primary text-white">
+
+            AI Status
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="mb-3">
+
+                <span class="badge bg-success">
+
+                    ✓ AI Extraction Complete
+
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <span class="badge bg-info">
+
+                    ✓ Customer Mapped
+
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <span class="badge bg-info">
+
+                    ✓ Machine Mapped
+
+                </span>
+
+            </div>
+
+            <div class="mb-3">
+
+                <span class="badge bg-info">
+
+                    ✓ Technician Mapped
+
+                </span>
+
+            </div>
+
+            <div>
+
+                <span class="badge bg-warning text-dark">
+
+                    Waiting for Confirmation
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ========================================= -->
+<!-- Action Buttons -->
+<!-- ========================================= -->
+
+<div class="col-12">
+
+    <hr>
+
+</div>
+
+<div class="col-12">
+
+    <div class="d-flex justify-content-between">
+
+        <a
+
+            href="{{ url_for('repair.import_pdf') }}"
+
+            class="btn btn-secondary"
+
+        >
+
+            ← Cancel
+
+        </a>
+
+        <button
+
+            id="confirm-btn"
+
+            type="submit"
+
+            class="btn btn-success"
+
+        >
+
+            ✓ Confirm Import
+
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    function () {
+
+        const form = document.querySelector("form");
+
+        const button = document.getElementById(
+
+            "confirm-btn"
+
+        );
+
+        form.addEventListener(
+
+            "submit",
+
+            function () {
+
+                button.disabled = true;
+
+                button.innerHTML =
+
+                    '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            }
+
+        );
+
+    }
+
+);
+
+</script>
+
+{% endblock %}
