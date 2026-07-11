@@ -1,4 +1,40 @@
+"""
+LaundryBot V7 Enterprise
+Dashboard Service
+"""
+
 import logging
+
+from repositories.dashboard_repository import (
+    dashboard_repository,
+)
+
+logger = logging.getLogger(
+
+    __name__,
+
+)
+
+
+class DashboardService:
+
+    def __init__(
+
+        self,
+
+    ):
+
+        self.repo = dashboard_repository
+
+        logger.info(
+
+            "Dashboard Service Initialized"
+
+        )
+
+    # ==========================================================
+    # Summary
+    # ==========================================================
 
     def summary(
 
@@ -11,11 +47,7 @@ import logging
             "Loading dashboard summary..."
 
         )
-logger = logging.getLogger(
 
-    __name__,
-
-)
         try:
 
             summary = {
@@ -71,3 +103,10 @@ logger = logging.getLogger(
                 "technician_total": 0,
 
             }
+
+
+# ==========================================================
+# Singleton
+# ==========================================================
+
+dashboard_service = DashboardService()
