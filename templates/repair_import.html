@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+
+{% block title %}
+Repair AI Import
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <div class="row">
+
+        <div class="col-lg-8 offset-lg-2">
+
+            <div class="card shadow">
+
+                <div class="card-header">
+
+                    <h3>
+
+                        AI Repair PDF Import
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <form
+
+                        method="POST"
+
+                        enctype="multipart/form-data"
+
+                    >
+
+                        <div class="mb-4">
+
+                            <label class="form-label">
+
+                                PDF File
+
+                            </label>
+
+                            <input
+
+                                type="file"
+
+                                class="form-control"
+
+                                name="file"
+
+                                accept=".pdf"
+
+                                required
+
+                            >
+
+                        </div>
+
+                        <div class="d-grid">
+
+                            <button
+
+                                class="btn btn-primary btn-lg"
+
+                                type="submit"
+
+                            >
+
+                                Import PDF With AI
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+<!-- ========================================= -->
+<!-- Flash Message -->
+<!-- ========================================= -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+{% if messages %}
+
+{% for category, message in messages %}
+
+<div class="alert alert-{{ category }} alert-dismissible fade show">
+
+    {{ message }}
+
+    <button
+
+        type="button"
+
+        class="btn-close"
+
+        data-bs-dismiss="alert">
+
+    </button>
+
+</div>
+
+{% endfor %}
+
+{% endif %}
+
+{% endwith %}
+
+<!-- ========================================= -->
+<!-- Upload Box -->
+<!-- ========================================= -->
+
+<div
+
+    id="drop-zone"
+
+    class="border border-2 rounded p-5 text-center mb-4"
+
+>
+
+    <div class="display-3 mb-3">
+
+        📄
+
+    </div>
+
+    <h5>
+
+        Drag & Drop PDF Here
+
+    </h5>
+
+    <p class="text-muted">
+
+        หรือเลือกไฟล์ PDF จากเครื่อง
+
+    </p>
+
+</div>
+<!-- ========================================= -->
+<!-- Flash Message -->
+<!-- ========================================= -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+{% if messages %}
+
+{% for category, message in messages %}
+
+<div class="alert alert-{{ category }} alert-dismissible fade show">
+
+    {{ message }}
+
+    <button
+
+        type="button"
+
+        class="btn-close"
+
+        data-bs-dismiss="alert">
+
+    </button>
+
+</div>
+
+{% endfor %}
+
+{% endif %}
+
+{% endwith %}
+
+<!-- ========================================= -->
+<!-- Upload Box -->
+<!-- ========================================= -->
+
+<div
+
+    id="drop-zone"
+
+    class="border border-2 rounded p-5 text-center mb-4"
+
+>
+
+    <div class="display-3 mb-3">
+
+        📄
+
+    </div>
+
+    <h5>
+
+        Drag & Drop PDF Here
+
+    </h5>
+
+    <p class="text-muted">
+
+        หรือเลือกไฟล์ PDF จากเครื่อง
+
+    </p>
+
+</div>
+<!-- ========================================= -->
+<!-- Information -->
+<!-- ========================================= -->
+
+<div class="card mt-4 border-0 shadow-sm">
+
+    <div class="card-header bg-light">
+
+        <strong>
+
+            AI Import Guide
+
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <ul class="mb-0">
+
+            <li>
+
+                รองรับเฉพาะไฟล์ PDF
+
+            </li>
+
+            <li>
+
+                ระบบจะอ่านข้อมูลด้วย AI อัตโนมัติ
+
+            </li>
+
+            <li>
+
+                ระบบจะสร้าง Customer / Machine / Technician หากยังไม่มี
+
+            </li>
+
+            <li>
+
+                ระบบจะตรวจสอบข้อมูลซ้ำก่อนบันทึก
+
+            </li>
+
+            <li>
+
+                เมื่อ Import สำเร็จ ระบบจะเปิดหน้ารายละเอียดใบงานทันที
+
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- Action -->
+<!-- ========================================= -->
+
+<div class="d-flex justify-content-between mt-4">
+
+    <a
+
+        href="{{ url_for('repair.index') }}"
+
+        class="btn btn-secondary"
+
+    >
+
+        ← Back to Repair List
+
+    </a>
+
+    <span class="text-muted">
+
+        LaundryBot V7 Enterprise AI Import
+
+    </span>
+
+</div>
