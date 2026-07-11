@@ -299,6 +299,56 @@ def confirm_import():
 
         )
 
+        if not result.get(
+
+            "success",
+
+        ):
+
+            flash(
+
+                result.get(
+
+                    "message",
+
+                    "Unable to save repair.",
+
+                ),
+
+                "warning",
+
+            )
+
+            return redirect(
+
+                url_for(
+
+                    "repair.import_pdf",
+
+                )
+
+            )
+
+        flash(
+
+            "Repair imported successfully.",
+
+            "success",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.detail",
+
+                repair_id=result["repair_id"],
+
+            )
+
+        )
+
     except Exception as e:
 
         flash(
@@ -309,33 +359,9 @@ def confirm_import():
 
         )
 
-        return redirect(
+        logger.exception(
 
-            url_for(
-
-                "repair.import_pdf",
-
-            )
-
-        )
-
-    if not result.get(
-
-        "success",
-
-    ):
-
-        flash(
-
-            result.get(
-
-                "message",
-
-                "Unable to import repair.",
-
-            ),
-
-            "warning",
+            e,
 
         )
 
@@ -348,27 +374,6 @@ def confirm_import():
             )
 
         )
-
-    flash(
-
-        "Repair imported successfully.",
-
-        "success",
-
-    )
-
-    return redirect(
-
-        url_for(
-
-            "repair.detail",
-
-            repair_id=result["data"],
-
-        )
-
-    )
-
 
 # ==========================================================
 # Create
