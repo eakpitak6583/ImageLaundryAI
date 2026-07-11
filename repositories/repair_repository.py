@@ -276,3 +276,15 @@ class RepairRepository(BaseRepository):
 
 
 repair_repository = RepairRepository()
+    # ==========================================================
+    # Statistics
+    # ==========================================================
+
+    def total(self):
+
+        row = self.fetch_one("""
+            SELECT COUNT(*) AS total
+            FROM repair_history
+        """)
+
+        return row["total"]
