@@ -1246,3 +1246,80 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Safe Import
+    # ==========================================================
+
+    def safe_import(
+
+        self,
+
+        filepath,
+
+    ):
+
+        logger.info(
+
+            "Safe Import Started"
+
+        )
+
+        try:
+
+            result = self.import_pdf(
+
+                filepath,
+
+            )
+
+            logger.info(
+
+                "Safe Import Success"
+
+            )
+
+            return result
+
+        except FileNotFoundError:
+
+            logger.exception(
+
+                "PDF file not found."
+
+            )
+
+            raise
+
+        except json.JSONDecodeError:
+
+            logger.exception(
+
+                "Invalid JSON returned from OpenAI."
+
+            )
+
+            raise
+
+        except ValueError as e:
+
+            logger.exception(
+
+                "Validation Error : %s",
+
+                e,
+
+            )
+
+            raise
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Unexpected Error : %s",
+
+                e,
+
+            )
+
+            raise
