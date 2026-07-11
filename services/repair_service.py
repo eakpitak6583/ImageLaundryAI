@@ -1,95 +1,209 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Repair Service
 """
+
+import logging
 
 from repositories.repair_repository import (
     repair_repository,
 )
 
-from services.base_service import BaseService
+from services.base_service import (
+    BaseService,
+)
+
 from services.repair_ai_service import (
     repair_ai_service,
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 class RepairService(BaseService):
 
-    def __init__(self):
+    # ==========================================================
+    # Constructor
+    # ==========================================================
+
+    def __init__(
+
+        self,
+
+    ):
+
+        super().__init__()
 
         self.repo = repair_repository
+
+        logger.info(
+
+            "Repair Service Initialized"
+
+        )
 
     # ==========================================================
     # Read
     # ==========================================================
 
-    def get_all(self):
+    def get_all(
+
+        self,
+
+    ):
 
         return self.repo.get_all()
 
-    def get(self, repair_id):
+    def get(
 
-        return self.repo.get(repair_id)
+        self,
 
-    def search(self, keyword):
+        repair_id,
 
-        return self.repo.search(keyword)
+    ):
 
-    def get_by_machine(self, machine_id):
+        return self.repo.get(
 
-        return self.repo.get_by_machine(machine_id)
+            repair_id,
+
+        )
+
+    def search(
+
+        self,
+
+        keyword,
+
+    ):
+
+        return self.repo.search(
+
+            keyword,
+
+        )
+
+    def get_by_machine(
+
+        self,
+
+        machine_id,
+
+    ):
+
+        return self.repo.get_by_machine(
+
+            machine_id,
+
+        )
 
     # ==========================================================
     # Create
     # ==========================================================
+        def create(
 
-    def create(self, data):
+        self,
 
-        if not data.get("job_no"):
+        data,
 
-            return self.error(
-                "Job No is required"
+    ):
+
+        logger.info(
+
+            "Creating repair record..."
+
+        )
+
+        required_fields = [
+
+            "job_no",
+
+            "machine_id",
+
+            "customer_id",
+
+            "technician_id",
+
+            "complaint",
+
+        ]
+
+        for field in required_fields:
+
+            value = data.get(
+
+                field,
+
+                "",
+
             )
 
-        if not data.get("machine_id"):
+            if value is None or str(value).strip() == "":
 
-            return self.error(
-                "Machine is required"
-            )
+                return self.error(
 
-        if not data.get("customer_id"):
+                    f"{field} is required"
 
-            return self.error(
-                "Customer is required"
-            )
+                )
 
-        if not data.get("technician_id"):
+        repair_id = self.repo.create(
 
-            return self.error(
-                "Technician is required"
-            )
+            data,
 
-        if not data.get("complaint"):
+        )
 
-            return self.error(
-                "Complaint is required"
-            )
+        logger.info(
 
-        repair_id = self.repo.create(data)
+            "Repair created : %s",
 
-        return self.success(repair_id)
+            repair_id,
+
+        )
+
+        return self.success(
+
+            repair_id,
+
+        )
+
     # ==========================================================
     # AI Import PDF
     # ==========================================================
 
-    def import_pdf(self, filepath):
+    def import_pdf(
 
-        result = repair_ai_service.import_pdf(
-            filepath
+        self,
+
+        filepath,
+
+    ):
+
+        logger.info(
+
+            "AI Import Started : %s",
+
+            filepath,
+
+        )
+
+        result = repair_ai_service.safe_import(
+
+            filepath,
+
         )
 
         repair_id = self.repo.create_ai(
-            result
+
+            result,
+
+        )
+
+        logger.info(
+
+            "AI Import Completed : %s",
+
+            repair_id,
+
         )
 
         return {
@@ -101,23 +215,56 @@ class RepairService(BaseService):
             "data": result,
 
         }
+
     # ==========================================================
     # Update
     # ==========================================================
+        def update(
 
-    def update(self, repair_id, data):
+        self,
 
-        repair = self.repo.get(repair_id)
+        repair_id,
 
-        if not repair:
+        data,
+
+    ):
+
+        logger.info(
+
+            "Updating repair : %s",
+
+            repair_id,
+
+        )
+
+        repair = self.repo.get(
+
+            repair_id,
+
+        )
+
+        if repair is None:
 
             return self.error(
+
                 "Repair not found"
+
             )
 
         self.repo.update(
+
             repair_id,
+
             data,
+
+        )
+
+        logger.info(
+
+            "Repair updated : %s",
+
+            repair_id,
+
         )
 
         return self.success()
@@ -126,18 +273,48 @@ class RepairService(BaseService):
     # Delete
     # ==========================================================
 
-    def delete(self, repair_id):
+    def delete(
 
-        repair = self.repo.get(repair_id)
+        self,
 
-        if not repair:
+        repair_id,
+
+    ):
+
+        logger.info(
+
+            "Deleting repair : %s",
+
+            repair_id,
+
+        )
+
+        repair = self.repo.get(
+
+            repair_id,
+
+        )
+
+        if repair is None:
 
             return self.error(
+
                 "Repair not found"
+
             )
 
         self.repo.delete(
-            repair_id
+
+            repair_id,
+
+        )
+
+        logger.info(
+
+            "Repair deleted : %s",
+
+            repair_id,
+
         )
 
         return self.success()
@@ -146,26 +323,104 @@ class RepairService(BaseService):
     # Dashboard
     # ==========================================================
 
-    def latest(self, limit=10):
+    def latest(
+
+        self,
+
+        limit=10,
+
+    ):
 
         repairs = self.repo.get_all()
 
         return repairs[:limit]
 
-
-repair_service = RepairService()
     # ==========================================================
     # Statistics
     # ==========================================================
+        def total(
 
-    def total(self):
+        self,
+
+    ):
 
         return self.repo.total()
 
-    def top_machine(self, limit=10):
+    # ==========================================================
+    # Top Machine
+    # ==========================================================
 
-        return self.repo.top_machine(limit)
+    def top_machine(
 
-    def top_complaint(self, limit=10):
+        self,
 
-        return self.repo.top_complaint(limit)
+        limit=10,
+
+    ):
+
+        return self.repo.top_machine(
+
+            limit,
+
+        )
+
+    # ==========================================================
+    # Top Customer
+    # ==========================================================
+
+    def top_customer(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.repo.top_customer(
+
+            limit,
+
+        )
+
+    # ==========================================================
+    # Top Technician
+    # ==========================================================
+
+    def top_technician(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.repo.top_technician(
+
+            limit,
+
+        )
+
+    # ==========================================================
+    # Top Complaint
+    # ==========================================================
+
+    def top_complaint(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.repo.top_complaint(
+
+            limit,
+
+        )
+
+
+# ==========================================================
+# Singleton
+# ==========================================================
+
+repair_service = RepairService()
