@@ -78,7 +78,29 @@ class RepairService(BaseService):
         repair_id = self.repo.create(data)
 
         return self.success(repair_id)
+    # ==========================================================
+    # AI Import PDF
+    # ==========================================================
 
+    def import_pdf(self, filepath):
+
+        result = repair_ai_service.import_pdf(
+            filepath
+        )
+
+        repair_id = self.repo.create_ai(
+            result
+        )
+
+        return {
+
+            "success": True,
+
+            "repair_id": repair_id,
+
+            "data": result,
+
+        }
     # ==========================================================
     # Update
     # ==========================================================
