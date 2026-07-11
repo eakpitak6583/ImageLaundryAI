@@ -5,7 +5,9 @@ Document Service
 
 import hashlib
 import logging
-from pathlib import Path
+from pathlib import (
+    Path,
+)
 
 from flask import (
     send_file,
@@ -13,10 +15,6 @@ from flask import (
 
 from config import (
     Config,
-)
-
-from database.db import (
-    connect,
 )
 
 from repositories.document_repository import (
@@ -35,6 +33,9 @@ from services.pdf_service import (
     pdf_service,
 )
 
+from services.rag_service import (
+    rag_service,
+)
 
 logger = logging.getLogger(
     __name__,
@@ -61,13 +62,171 @@ class DocumentService(BaseService):
 
             Config.UPLOAD_FOLDER,
 
+        ).resolve()
+
+        self.upload_path.mkdir(
+
+            parents=True,
+
+            exist_ok=True,
+
         )
 
         logger.info(
 
-            "Document Service Initialized"
+            "Document Service Initialized",
 
         )
+
+    # ==========================================================
+    # Build Hash
+    # ==========================================================
+
+    def build_hash(
+
+        self,
+
+        filename,
+
+        content,
+
+    ):
+
+        source = (
+
+            str(
+
+                filename or "",
+
+            )
+
+            +
+
+            str(
+
+                content or "",
+
+            )
+
+        )
+
+        return hashlib.sha256(
+
+            source.encode(
+
+                "utf-8",
+
+            )
+
+        ).hexdigest()
+
+    # ==========================================================
+    # Validate Filename
+    # ==========================================================
+
+    def validate_filename(
+
+        self,
+
+        filename,
+
+    ):
+
+        filename = str(
+
+            filename or "",
+
+        ).strip()
+
+        if filename == "":
+
+            raise ValueError(
+
+                "Filename is required.",
+
+            )
+
+        return Path(
+
+            filename,
+
+        ).name
+
+    # ==========================================================
+    # Validate Upload
+    # ==========================================================
+
+    def validate_upload(
+
+        self,
+
+        file,
+
+    ):
+
+        if file is None:
+
+            raise ValueError(
+
+                "PDF file is required.",
+
+            )
+
+        filename = self.validate_filename(
+
+            getattr(
+
+                file,
+
+                "filename",
+
+                "",
+
+            )
+
+        )
+
+        if not filename.lower().endswith(
+
+            ".pdf",
+
+        ):
+
+            raise ValueError(
+
+                "Only PDF files are supported.",
+
+            )
+
+        return filename
+
+    # ==========================================================
+    # Rebuild Vector Database
+    # ==========================================================
+
+    def rebuild_vector(
+
+        self,
+
+    ):
+
+        logger.info(
+
+            "Rebuilding vector database...",
+
+        )
+
+        pages = embedding_service.rebuild()
+
+        rag_service.reload()
+
+        logger.info(
+
+            "Vector database rebuilt successfully.",
+
+        )
+
+        return pages
 
     # ==========================================================
     # Read
@@ -79,7 +238,25 @@ class DocumentService(BaseService):
 
     ):
 
-        return self.repo.get_all()
+        logger.info(
+
+            "Loading all documents...",
+
+        )
+
+        documents = self.repo.get_all()
+
+        return self.success(
+
+            data=documents,
+
+            count=len(
+
+                documents,
+
+            ),
+
+        )
 
     def get(
 
@@ -89,9 +266,33 @@ class DocumentService(BaseService):
 
     ):
 
-        return self.repo.get(
+        logger.info(
+
+            "Loading document : %s",
 
             document_id,
+
+        )
+
+        document = self.repo.get(
+
+            document_id,
+
+        )
+
+        if document is None:
+
+            return self.error(
+
+                "Document not found.",
+
+            )
+
+        return self.success(
+
+            data=document,
+
+            count=1,
 
         )
 
@@ -103,9 +304,45 @@ class DocumentService(BaseService):
 
     ):
 
-        return self.repo.search(
+        keyword = str(
+
+            keyword or "",
+
+        ).strip()
+
+        if keyword == "":
+
+            return self.error(
+
+                "Keyword is required.",
+
+            )
+
+        logger.info(
+
+            "Searching document : %s",
 
             keyword,
+
+        )
+
+        documents = self.repo.search(
+
+            keyword,
+
+        )
+
+        return self.success(
+
+            data=documents,
+
+            count=len(
+
+                documents,
+
+            ),
+
+            keyword=keyword,
 
         )
 
@@ -121,35 +358,38 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Loading import logs..."
+            "Loading import logs...",
 
         )
 
-        conn = connect()
+        if not hasattr(
 
-        try:
+            self.repo,
 
-            rows = conn.execute(
+            "import_logs",
 
-                """
-                SELECT *
+        ):
 
-                FROM import_logs
+            return self.error(
 
-                ORDER BY
+                "Repository does not support import logs.",
 
-                    imported_at DESC,
+            )
 
-                    id DESC
-                """
+        logs = self.repo.import_logs()
 
-            ).fetchall()
+        return self.success(
 
-            return rows
+            data=logs,
 
-        finally:
+            count=len(
 
-            conn.close()
+                logs,
+
+            ),
+
+        )
+
     # ==========================================================
     # Create
     # ==========================================================
@@ -164,29 +404,19 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Creating document..."
+            "Creating document...",
 
         )
 
-        filename = str(
+        filename = self.validate_filename(
 
             data.get(
 
                 "filename",
 
-                "",
-
             )
 
-        ).strip()
-
-        if filename == "":
-
-            return self.error(
-
-                "Filename is required"
-
-            )
+        )
 
         content = str(
 
@@ -200,29 +430,19 @@ class DocumentService(BaseService):
 
         )
 
-        if not data.get(
+        data["filename"] = filename
+
+        data["file_hash"] = data.get(
 
             "file_hash",
 
-        ):
+        ) or self.build_hash(
 
-            source = (
+            filename,
 
-                filename
+            content,
 
-                + content
-
-            )
-
-            data["file_hash"] = hashlib.sha256(
-
-                source.encode(
-
-                    "utf-8",
-
-                )
-
-            ).hexdigest()
+        )
 
         document_id = self.repo.create(
 
@@ -238,15 +458,21 @@ class DocumentService(BaseService):
 
         )
 
-        return {
+        self.rebuild_vector()
 
-            "success": True,
+        return self.success(
 
-            "document_id": document_id,
+            message="Document created successfully.",
 
-            "data": document_id,
+            data={
 
-        }
+                "document_id": document_id,
+
+            },
+
+            count=1,
+
+        )
 
     # ==========================================================
     # Import PDF
@@ -264,61 +490,59 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Import PDF Started"
+            "Import PDF started.",
 
         )
 
-        file = files.get(
+        try:
 
-            "file",
+            file = files.get(
 
-        )
-
-        if file is None:
-
-            return self.error(
-
-                "PDF file is required"
+                "file",
 
             )
 
-        if file.filename == "":
+            filename = self.validate_upload(
 
-            return self.error(
-
-                "Filename is required"
+                file,
 
             )
 
-        category = form.get(
+        except ValueError as e:
 
-            "category",
+            return self.error(
 
-            "manual",
+                str(
 
-        )
+                    e,
 
-        model = form.get(
+                )
 
-            "machine_model",
+            )
 
-            "",
+        category = str(
 
-        )
+            form.get(
 
-        self.upload_path.mkdir(
+                "category",
 
-            parents=True,
+                "manual",
 
-            exist_ok=True,
+            )
 
-        )
+        ).strip()
 
-        filename = Path(
+        model = str(
 
-            file.filename,
+            form.get(
 
-        ).name
+                "machine_model",
+
+                "",
+
+            )
+
+        ).strip()
 
         filepath = self.upload_path / filename
 
@@ -330,7 +554,7 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "PDF Saved : %s",
+            "PDF saved : %s",
 
             filepath,
 
@@ -354,6 +578,8 @@ class DocumentService(BaseService):
 
         )
 
+        self.rebuild_vector()
+
         logger.info(
 
             "Imported %s pages.",
@@ -362,15 +588,26 @@ class DocumentService(BaseService):
 
         )
 
-        return {
+        return self.success(
 
-            "success": True,
+            message="PDF imported successfully.",
 
-            "pages": pages,
+            data={
 
-            "filename": filename,
+                "filename": filename,
 
-        }
+                "pages": pages,
+
+                "category": category,
+
+                "model": model,
+
+            },
+
+            count=pages,
+
+        )
+
     # ==========================================================
     # Update
     # ==========================================================
@@ -403,11 +640,11 @@ class DocumentService(BaseService):
 
             return self.error(
 
-                "Document not found"
+                "Document not found.",
 
             )
 
-        filename = str(
+        filename = self.validate_filename(
 
             data.get(
 
@@ -423,7 +660,7 @@ class DocumentService(BaseService):
 
             )
 
-        ).strip()
+        )
 
         content = str(
 
@@ -443,23 +680,15 @@ class DocumentService(BaseService):
 
         )
 
-        source = (
+        data["filename"] = filename
 
-            filename
+        data["file_hash"] = self.build_hash(
 
-            + content
+            filename,
+
+            content,
 
         )
-
-        data["file_hash"] = hashlib.sha256(
-
-            source.encode(
-
-                "utf-8",
-
-            )
-
-        ).hexdigest()
 
         self.repo.update(
 
@@ -469,6 +698,8 @@ class DocumentService(BaseService):
 
         )
 
+        self.rebuild_vector()
+
         logger.info(
 
             "Document updated : %s",
@@ -477,8 +708,19 @@ class DocumentService(BaseService):
 
         )
 
-        return self.success()
+        return self.success(
 
+            message="Document updated successfully.",
+
+            data={
+
+                "document_id": document_id,
+
+            },
+
+            count=1,
+
+        )
     # ==========================================================
     # Delete
     # ==========================================================
@@ -509,7 +751,7 @@ class DocumentService(BaseService):
 
             return self.error(
 
-                "Document not found"
+                "Document not found.",
 
             )
 
@@ -519,6 +761,8 @@ class DocumentService(BaseService):
 
         )
 
+        self.rebuild_vector()
+
         logger.info(
 
             "Document deleted : %s",
@@ -527,9 +771,22 @@ class DocumentService(BaseService):
 
         )
 
-        return self.success()
+        return self.success(
+
+            message="Document deleted successfully.",
+
+            data={
+
+                "document_id": document_id,
+
+            },
+
+            count=1,
+
+        )
+
     # ==========================================================
-    # Latest
+    # Latest Documents
     # ==========================================================
 
     def latest(
@@ -542,7 +799,19 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Loading latest documents..."
+            "Loading latest documents...",
+
+        )
+
+        limit = max(
+
+            1,
+
+            int(
+
+                limit,
+
+            ),
 
         )
 
@@ -554,18 +823,30 @@ class DocumentService(BaseService):
 
         ):
 
-            return self.repo.latest(
+            documents = self.repo.latest(
 
                 limit,
 
             )
 
-        documents = self.repo.get_all()
+        else:
 
-        return documents[:limit]
+            documents = self.repo.get_all()[:limit]
+
+        return self.success(
+
+            data=documents,
+
+            count=len(
+
+                documents,
+
+            ),
+
+        )
 
     # ==========================================================
-    # Statistics
+    # Total Documents
     # ==========================================================
 
     def total(
@@ -576,7 +857,7 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Counting documents..."
+            "Counting documents...",
 
         )
 
@@ -588,11 +869,25 @@ class DocumentService(BaseService):
 
         ):
 
-            return self.repo.total()
+            total = self.repo.total()
 
-        return len(
+        else:
 
-            self.repo.get_all()
+            total = len(
+
+                self.repo.get_all(),
+
+            )
+
+        return self.success(
+
+            data={
+
+                "total": total,
+
+            },
+
+            count=total,
 
         )
 
@@ -608,33 +903,33 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Rebuilding embedding database..."
+            "Rebuilding embedding database...",
 
         )
 
         try:
 
-            pages = embedding_service.build()
+            pages = self.rebuild_vector()
 
-            logger.info(
+            return self.success(
 
-                "Embedding rebuilt : %s pages",
+                message="Vector database rebuilt successfully.",
 
-                pages,
+                data={
+
+                    "pages": pages,
+
+                },
+
+                count=pages,
 
             )
-
-            return {
-
-                "success": True,
-
-                "pages": pages,
-
-            }
 
         except Exception as e:
 
             logger.exception(
+
+                "Vector rebuild failed : %s",
 
                 e,
 
@@ -642,14 +937,14 @@ class DocumentService(BaseService):
 
             return self.error(
 
-                "Vector rebuild failed."
+                "Vector rebuild failed.",
 
             )
     # ==========================================================
-    # View PDF
+    # PDF Path
     # ==========================================================
 
-    def view_pdf(
+    def pdf_path(
 
         self,
 
@@ -657,23 +952,15 @@ class DocumentService(BaseService):
 
     ):
 
-        logger.info(
-
-            "Opening PDF : %s",
+        filename = self.validate_filename(
 
             filename,
 
         )
 
-        filename = Path(
-
-            filename,
-
-        ).name
-
         pdf = self.upload_path / filename
 
-        if not pdf.exists():
+        if not pdf.is_file():
 
             logger.warning(
 
@@ -689,6 +976,34 @@ class DocumentService(BaseService):
 
             )
 
+        return pdf
+
+    # ==========================================================
+    # View PDF
+    # ==========================================================
+
+    def view_pdf(
+
+        self,
+
+        filename,
+
+    ):
+
+        logger.info(
+
+            "Viewing PDF : %s",
+
+            filename,
+
+        )
+
+        pdf = self.pdf_path(
+
+            filename,
+
+        )
+
         return send_file(
 
             pdf,
@@ -697,7 +1012,7 @@ class DocumentService(BaseService):
 
             as_attachment=False,
 
-            download_name=filename,
+            download_name=pdf.name,
 
         )
 
@@ -721,29 +1036,11 @@ class DocumentService(BaseService):
 
         )
 
-        filename = Path(
+        pdf = self.pdf_path(
 
             filename,
 
-        ).name
-
-        pdf = self.upload_path / filename
-
-        if not pdf.exists():
-
-            logger.warning(
-
-                "PDF not found : %s",
-
-                pdf,
-
-            )
-
-            raise FileNotFoundError(
-
-                filename,
-
-            )
+        )
 
         return send_file(
 
@@ -753,7 +1050,93 @@ class DocumentService(BaseService):
 
             as_attachment=True,
 
-            download_name=filename,
+            download_name=pdf.name,
+
+        )
+
+    # ==========================================================
+    # PDF Exists
+    # ==========================================================
+
+    def exists(
+
+        self,
+
+        filename,
+
+    ):
+
+        try:
+
+            self.pdf_path(
+
+                filename,
+
+            )
+
+            return True
+
+        except FileNotFoundError:
+
+            return False
+
+    # ==========================================================
+    # PDF Size
+    # ==========================================================
+
+    def file_size(
+
+        self,
+
+        filename,
+
+    ):
+
+        pdf = self.pdf_path(
+
+            filename,
+
+        )
+
+        return pdf.stat().st_size
+
+    # ==========================================================
+    # PDF Information
+    # ==========================================================
+
+    def pdf_info(
+
+        self,
+
+        filename,
+
+    ):
+
+        pdf = self.pdf_path(
+
+            filename,
+
+        )
+
+        return self.success(
+
+            data={
+
+                "filename": pdf.name,
+
+                "path": str(
+
+                    pdf,
+
+                ),
+
+                "size": pdf.stat().st_size,
+
+                "exists": True,
+
+            },
+
+            count=1,
 
         )
     # ==========================================================
@@ -768,7 +1151,7 @@ class DocumentService(BaseService):
 
         logger.info(
 
-            "Document Service Health Check"
+            "Document Service Health Check",
 
         )
 
@@ -778,9 +1161,115 @@ class DocumentService(BaseService):
 
             "service": "document_service",
 
+            "repository": self.repo is not None,
+
+            "upload_folder": str(
+
+                self.upload_path,
+
+            ),
+
+            "upload_exists": self.upload_path.exists(),
+
+            "embedding_ready": embedding_service is not None,
+
+            "rag_ready": rag_service.is_ready(),
+
             "status": "ok",
 
         }
+
+    # ==========================================================
+    # Statistics
+    # ==========================================================
+
+    def statistics(
+
+        self,
+
+    ):
+
+        logger.info(
+
+            "Loading document statistics...",
+
+        )
+
+        try:
+
+            total = 0
+
+            if hasattr(
+
+                self.repo,
+
+                "total",
+
+            ):
+
+                total = self.repo.total()
+
+            else:
+
+                total = len(
+
+                    self.repo.get_all(),
+
+                )
+
+            return {
+
+                "success": True,
+
+                "total_documents": total,
+
+                "upload_folder": str(
+
+                    self.upload_path,
+
+                ),
+
+                "vector_ready": rag_service.is_ready(),
+
+                "embedding_ready": embedding_service is not None,
+
+            }
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Statistics Error : %s",
+
+                e,
+
+            )
+
+            return self.error(
+
+                "Unable to load statistics.",
+
+            )
+
+    # ==========================================================
+    # Ready
+    # ==========================================================
+
+    def is_ready(
+
+        self,
+
+    ):
+
+        return (
+
+            self.upload_path.exists()
+
+            and
+
+            rag_service.is_ready()
+
+        )
 
     # ==========================================================
     # Version
@@ -798,7 +1287,21 @@ class DocumentService(BaseService):
 
             "module": "Document Service",
 
-            "version": "7.0",
+            "version": getattr(
+
+                Config,
+
+                "VERSION",
+
+                "7.0",
+
+            ),
+
+            "upload_folder": str(
+
+                self.upload_path,
+
+            ),
 
         }
 
