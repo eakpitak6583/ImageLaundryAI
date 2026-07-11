@@ -152,7 +152,40 @@ class RepairRepository(BaseRepository):
             data.get("machine_id"),
 
         ))
+    # ==========================================================
+    # Create From AI
+    # ==========================================================
 
+    def create_ai(self, data):
+
+        # ตรวจสอบข้อมูลซ้ำ
+        duplicate = self.fetch_one("""
+            SELECT id
+            FROM repair_history
+            WHERE
+
+                job_no = ?
+
+                OR
+                (
+                    serial_no = ?
+                    AND serial_no <> ''
+                )
+
+            LIMIT 1
+        """, (
+
+            data.get("job_no"),
+
+            data.get("serial_no"),
+
+        ))
+
+        if duplicate:
+
+            return duplicate["id"]
+
+        return self.create(data)
     # ==========================================================
     # Update
     # ==========================================================
