@@ -17,7 +17,7 @@ class MachineRepository(BaseRepository):
         return self.fetch_all("""
             SELECT *
             FROM machines
-            ORDER BY machine_model
+            ORDER BY brand, model
         """)
 
     def get(self, machine_id):
@@ -25,7 +25,7 @@ class MachineRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM machines
-            WHERE id = ?
+            WHERE id=?
         """, (machine_id,))
 
     def search(self, keyword):
@@ -37,7 +37,9 @@ class MachineRepository(BaseRepository):
             FROM machines
             WHERE
 
-                machine_model LIKE ?
+                brand LIKE ?
+
+                OR model LIKE ?
 
                 OR sap_no LIKE ?
 
@@ -45,8 +47,10 @@ class MachineRepository(BaseRepository):
 
                 OR location LIKE ?
 
-            ORDER BY machine_model
+            ORDER BY brand, model
         """, (
+
+            keyword,
 
             keyword,
 
@@ -70,9 +74,13 @@ class MachineRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM machines
-            WHERE sap_no = ?
+            WHERE sap_no=?
             LIMIT 1
-        """, (sap_no.strip(),))
+        """, (
+
+            sap_no.strip(),
+
+        ))
 
     def find_by_serial(self, serial_no):
 
@@ -82,21 +90,43 @@ class MachineRepository(BaseRepository):
         return self.fetch_one("""
             SELECT *
             FROM machines
-            WHERE serial_no = ?
+            WHERE serial_no=?
             LIMIT 1
-        """, (serial_no.strip(),))
+        """, (
 
-    def find_by_model(self, model):
+            serial_no.strip(),
 
-        if not model:
-            return None
+        ))
+
+    def find_by_brand_model(
+
+        self,
+
+        brand,
+
+        model,
+
+    ):
 
         return self.fetch_one("""
             SELECT *
             FROM machines
-            WHERE LOWER(machine_model)=LOWER(?)
+            WHERE
+
+                LOWER(brand)=LOWER(?)
+
+                AND
+
+                LOWER(model)=LOWER(?)
+
             LIMIT 1
-        """, (model.strip(),))
+        """, (
+
+            brand,
+
+            model,
+
+        ))
 
     # ==========================================================
     # Find or Create
@@ -106,61 +136,59 @@ class MachineRepository(BaseRepository):
 
         self,
 
+        brand,
+
         model,
 
         sap_no="",
 
         serial_no="",
 
+        customer_id=None,
+
     ):
 
-        machine = self.find_by_sap(sap_no)
+        machine = None
 
-        if machine:
+        if sap_no:
 
-            return machine["id"]
+            machine = self.find_by_sap(
+                sap_no
+            )
 
-        machine = self.find_by_serial(serial_no)
+        if machine is None and serial_no:
 
-        if machine:
-
-            return machine["id"]
-
-        machine = self.find_by_model(model)
-
-        if machine:
-
-            return machine["id"]
-
-        machine_id = self.execute("""
-
-            INSERT INTO machines
-            (
-
-                machine_model,
-
-                sap_no,
-
+            machine = self.find_by_serial(
                 serial_no
+            )
+
+        if machine is None:
+
+            machine = self.find_by_brand_model(
+
+                brand,
+
+                model,
 
             )
 
-            VALUES
-            (
-                ?,?,?
-            )
+        if machine:
 
-        """, (
+            return machine["id"]
 
-            model,
+        return self.create({
 
-            sap_no,
+            "brand": brand,
 
-            serial_no,
+            "model": model,
 
-        ))
+            "sap_no": sap_no,
 
-        return machine_id
+            "serial_no": serial_no,
+
+            "customer_id": customer_id,
+
+        })
 
     # ==========================================================
     # Create
@@ -169,11 +197,16 @@ class MachineRepository(BaseRepository):
     def create(self, data):
 
         return self.execute("""
-
             INSERT INTO machines
             (
 
-                machine_model,
+                brand,
+
+                model,
+
+                machine_type,
+
+                manual_file,
 
                 sap_no,
 
@@ -181,20 +214,31 @@ class MachineRepository(BaseRepository):
 
                 customer_id,
 
+                machine_master_id,
+
                 location,
 
-                machine_master_id
+                status,
+
+                install_date,
+
+                note
 
             )
 
             VALUES
             (
-                ?,?,?,?,?,?
+                ?,?,?,?,?,?,?,?,?,?,?,?
             )
-
         """, (
 
-            data.get("machine_model"),
+            data.get("brand"),
+
+            data.get("model"),
+
+            data.get("machine_type"),
+
+            data.get("manual_file"),
 
             data.get("sap_no"),
 
@@ -202,9 +246,15 @@ class MachineRepository(BaseRepository):
 
             data.get("customer_id"),
 
+            data.get("machine_master_id"),
+
             data.get("location"),
 
-            data.get("machine_master_id"),
+            data.get("status", "ACTIVE"),
+
+            data.get("install_date"),
+
+            data.get("note"),
 
         ))
 
@@ -212,15 +262,27 @@ class MachineRepository(BaseRepository):
     # Update
     # ==========================================================
 
-    def update(self, machine_id, data):
+    def update(
+
+        self,
+
+        machine_id,
+
+        data,
+
+    ):
 
         self.execute("""
-
             UPDATE machines
-
             SET
 
-                machine_model=?,
+                brand=?,
+
+                model=?,
+
+                machine_type=?,
+
+                manual_file=?,
 
                 sap_no=?,
 
@@ -228,17 +290,26 @@ class MachineRepository(BaseRepository):
 
                 customer_id=?,
 
-                location=?,
-
                 machine_master_id=?,
 
-                updated_at=CURRENT_TIMESTAMP
+                location=?,
+
+                status=?,
+
+                install_date=?,
+
+                note=?
 
             WHERE id=?
-
         """, (
 
-            data.get("machine_model"),
+            data.get("brand"),
+
+            data.get("model"),
+
+            data.get("machine_type"),
+
+            data.get("manual_file"),
 
             data.get("sap_no"),
 
@@ -246,9 +317,15 @@ class MachineRepository(BaseRepository):
 
             data.get("customer_id"),
 
+            data.get("machine_master_id"),
+
             data.get("location"),
 
-            data.get("machine_master_id"),
+            data.get("status"),
+
+            data.get("install_date"),
+
+            data.get("note"),
 
             machine_id,
 
