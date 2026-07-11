@@ -1115,3 +1115,134 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Import PDF
+    # ==========================================================
+
+    def import_pdf(
+
+        self,
+
+        filepath,
+
+    ):
+
+        logger.info(
+
+            "=" * 60
+
+        )
+
+        logger.info(
+
+            "AI Repair Import Started"
+
+        )
+
+        logger.info(
+
+            "File : %s",
+
+            filepath,
+
+        )
+
+        # ------------------------------------------------------
+        # Prepare
+        # ------------------------------------------------------
+
+        data = self.prepare(
+
+            filepath,
+
+        )
+
+        # ------------------------------------------------------
+        # Mapping
+        # ------------------------------------------------------
+
+        data = self.mapping(
+
+            data,
+
+        )
+
+        # ------------------------------------------------------
+        # Save File
+        # ------------------------------------------------------
+
+        data["report_file"] = filepath
+
+        logger.info(
+
+            "Import Completed"
+
+        )
+
+        logger.info(
+
+            "Job No : %s",
+
+            data.get(
+
+                "job_no"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "Machine : %s",
+
+            data.get(
+
+                "machine_model"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "Customer ID : %s",
+
+            data.get(
+
+                "customer_id"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "Machine ID : %s",
+
+            data.get(
+
+                "machine_id"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "Technician ID : %s",
+
+            data.get(
+
+                "technician_id"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "=" * 60
+
+        )
+
+        return data
