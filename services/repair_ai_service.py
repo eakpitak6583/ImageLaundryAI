@@ -404,3 +404,96 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Normalize
+    # ==========================================================
+
+    def normalize(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Normalizing AI data..."
+
+        )
+
+        if data is None:
+
+            data = {}
+
+        fields = [
+
+            "job_no",
+
+            "brand",
+
+            "machine_model",
+
+            "sap_no",
+
+            "serial_no",
+
+            "customer",
+
+            "complaint",
+
+            "detail",
+
+            "repair_action",
+
+            "result",
+
+            "technician",
+
+            "employee_code",
+
+            "repair_date",
+
+        ]
+
+        result = {}
+
+        for field in fields:
+
+            value = data.get(
+
+                field,
+
+                "",
+
+            )
+
+            if value is None:
+
+                value = ""
+
+            if not isinstance(
+
+                value,
+
+                str,
+
+            ):
+
+                value = str(
+
+                    value
+
+                )
+
+            value = value.strip()
+
+            result[field] = value
+
+        logger.info(
+
+            "Normalize completed."
+
+        )
+
+        return result
