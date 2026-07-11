@@ -1,10 +1,23 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Document Service
 """
 
 import hashlib
 import logging
+from pathlib import Path
+
+from flask import (
+    send_file,
+)
+
+from config import (
+    Config,
+)
+
+from database.db import (
+    connect,
+)
 
 from repositories.document_repository import (
     document_repository,
@@ -14,11 +27,17 @@ from services.base_service import (
     BaseService,
 )
 
+from services.embedding_service import (
+    embedding_service,
+)
+
+from services.pdf_service import (
+    pdf_service,
+)
+
 
 logger = logging.getLogger(
-
     __name__,
-
 )
 
 
@@ -37,6 +56,12 @@ class DocumentService(BaseService):
         super().__init__()
 
         self.repo = document_repository
+
+        self.upload_path = Path(
+
+            Config.UPLOAD_FOLDER,
+
+        )
 
         logger.info(
 
@@ -83,6 +108,48 @@ class DocumentService(BaseService):
             keyword,
 
         )
+
+    # ==========================================================
+    # Import Logs
+    # ==========================================================
+
+    def import_logs(
+
+        self,
+
+    ):
+
+        logger.info(
+
+            "Loading import logs..."
+
+        )
+
+        conn = connect()
+
+        try:
+
+            rows = conn.execute(
+
+                """
+                SELECT *
+
+                FROM import_logs
+
+                ORDER BY
+
+                    imported_at DESC,
+
+                    id DESC
+                """
+
+            ).fetchall()
+
+            return rows
+
+        finally:
+
+            conn.close()
     # ==========================================================
     # Create
     # ==========================================================
@@ -178,6 +245,130 @@ class DocumentService(BaseService):
             "document_id": document_id,
 
             "data": document_id,
+
+        }
+
+    # ==========================================================
+    # Import PDF
+    # ==========================================================
+
+    def import_pdf(
+
+        self,
+
+        files,
+
+        form,
+
+    ):
+
+        logger.info(
+
+            "Import PDF Started"
+
+        )
+
+        file = files.get(
+
+            "file",
+
+        )
+
+        if file is None:
+
+            return self.error(
+
+                "PDF file is required"
+
+            )
+
+        if file.filename == "":
+
+            return self.error(
+
+                "Filename is required"
+
+            )
+
+        category = form.get(
+
+            "category",
+
+            "manual",
+
+        )
+
+        model = form.get(
+
+            "machine_model",
+
+            "",
+
+        )
+
+        self.upload_path.mkdir(
+
+            parents=True,
+
+            exist_ok=True,
+
+        )
+
+        filename = Path(
+
+            file.filename,
+
+        ).name
+
+        filepath = self.upload_path / filename
+
+        file.save(
+
+            filepath,
+
+        )
+
+        logger.info(
+
+            "PDF Saved : %s",
+
+            filepath,
+
+        )
+
+        pages = pdf_service.import_pdf(
+
+            filepath=str(
+
+                filepath,
+
+            ),
+
+            filename=filename,
+
+            document_type=category,
+
+            model=model,
+
+            category=category,
+
+        )
+
+        logger.info(
+
+            "Imported %s pages.",
+
+            pages,
+
+        )
+
+        return {
+
+            "success": True,
+
+            "pages": pages,
+
+            "filename": filename,
 
         }
     # ==========================================================
@@ -287,6 +478,7 @@ class DocumentService(BaseService):
         )
 
         return self.success()
+
     # ==========================================================
     # Delete
     # ==========================================================
@@ -336,7 +528,6 @@ class DocumentService(BaseService):
         )
 
         return self.success()
-
     # ==========================================================
     # Latest
     # ==========================================================
@@ -349,11 +540,29 @@ class DocumentService(BaseService):
 
     ):
 
-        return self.repo.latest(
+        logger.info(
 
-            limit,
+            "Loading latest documents..."
 
         )
+
+        if hasattr(
+
+            self.repo,
+
+            "latest",
+
+        ):
+
+            return self.repo.latest(
+
+                limit,
+
+            )
+
+        documents = self.repo.get_all()
+
+        return documents[:limit]
 
     # ==========================================================
     # Statistics
@@ -365,7 +574,233 @@ class DocumentService(BaseService):
 
     ):
 
-        return self.repo.total()
+        logger.info(
+
+            "Counting documents..."
+
+        )
+
+        if hasattr(
+
+            self.repo,
+
+            "total",
+
+        ):
+
+            return self.repo.total()
+
+        return len(
+
+            self.repo.get_all()
+
+        )
+
+    # ==========================================================
+    # Rebuild Embedding
+    # ==========================================================
+
+    def rebuild_embedding(
+
+        self,
+
+    ):
+
+        logger.info(
+
+            "Rebuilding embedding database..."
+
+        )
+
+        try:
+
+            pages = embedding_service.build()
+
+            logger.info(
+
+                "Embedding rebuilt : %s pages",
+
+                pages,
+
+            )
+
+            return {
+
+                "success": True,
+
+                "pages": pages,
+
+            }
+
+        except Exception as e:
+
+            logger.exception(
+
+                e,
+
+            )
+
+            return self.error(
+
+                "Vector rebuild failed."
+
+            )
+    # ==========================================================
+    # View PDF
+    # ==========================================================
+
+    def view_pdf(
+
+        self,
+
+        filename,
+
+    ):
+
+        logger.info(
+
+            "Opening PDF : %s",
+
+            filename,
+
+        )
+
+        filename = Path(
+
+            filename,
+
+        ).name
+
+        pdf = self.upload_path / filename
+
+        if not pdf.exists():
+
+            logger.warning(
+
+                "PDF not found : %s",
+
+                pdf,
+
+            )
+
+            raise FileNotFoundError(
+
+                filename,
+
+            )
+
+        return send_file(
+
+            pdf,
+
+            mimetype="application/pdf",
+
+            as_attachment=False,
+
+            download_name=filename,
+
+        )
+
+    # ==========================================================
+    # Download PDF
+    # ==========================================================
+
+    def download_pdf(
+
+        self,
+
+        filename,
+
+    ):
+
+        logger.info(
+
+            "Downloading PDF : %s",
+
+            filename,
+
+        )
+
+        filename = Path(
+
+            filename,
+
+        ).name
+
+        pdf = self.upload_path / filename
+
+        if not pdf.exists():
+
+            logger.warning(
+
+                "PDF not found : %s",
+
+                pdf,
+
+            )
+
+            raise FileNotFoundError(
+
+                filename,
+
+            )
+
+        return send_file(
+
+            pdf,
+
+            mimetype="application/pdf",
+
+            as_attachment=True,
+
+            download_name=filename,
+
+        )
+    # ==========================================================
+    # Health
+    # ==========================================================
+
+    def health(
+
+        self,
+
+    ):
+
+        logger.info(
+
+            "Document Service Health Check"
+
+        )
+
+        return {
+
+            "success": True,
+
+            "service": "document_service",
+
+            "status": "ok",
+
+        }
+
+    # ==========================================================
+    # Version
+    # ==========================================================
+
+    def version(
+
+        self,
+
+    ):
+
+        return {
+
+            "name": "LaundryBot V7 Enterprise",
+
+            "module": "Document Service",
+
+            "version": "7.0",
+
+        }
 
 
 # ==========================================================
