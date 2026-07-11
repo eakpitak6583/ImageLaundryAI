@@ -9,6 +9,10 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 
+from config import (
+    Config,
+)
+
 from database.db import (
     connect,
 )
@@ -56,11 +60,11 @@ class PDFService:
 
             "rb",
 
-        ) as f:
+        ) as file:
 
             for chunk in iter(
 
-                lambda: f.read(65536),
+                lambda: file.read(65536),
 
                 b"",
 
@@ -123,7 +127,7 @@ class PDFService:
 
             logger.info(
 
-                "Replacing existing document : %s",
+                "Removing previous document : %s",
 
                 filename,
 
@@ -149,7 +153,7 @@ class PDFService:
 
             )
 
-            for page_no in range(
+            for page_number in range(
 
                 len(doc),
 
@@ -157,7 +161,7 @@ class PDFService:
 
                 page = doc.load_page(
 
-                    page_no,
+                    page_number,
 
                 )
 
@@ -167,7 +171,7 @@ class PDFService:
 
                 ).strip()
 
-                if text == "":
+                if not text:
 
                     continue
 
@@ -211,7 +215,7 @@ class PDFService:
 
                         category,
 
-                        page_no + 1,
+                        page_number + 1,
 
                         text,
 
@@ -227,9 +231,11 @@ class PDFService:
 
             logger.info(
 
-                "Imported %s pages.",
+                "Imported %s pages from %s",
 
                 imported,
+
+                filename,
 
             )
 
@@ -241,7 +247,7 @@ class PDFService:
 
             logger.exception(
 
-                "PDF import failed: %s",
+                "Import PDF failed: %s",
 
                 e,
 
@@ -286,7 +292,7 @@ class PDFService:
 
             )
 
-            texts = []
+            pages = []
 
             for page in doc:
 
@@ -298,7 +304,7 @@ class PDFService:
 
                 if text:
 
-                    texts.append(
+                    pages.append(
 
                         text,
 
@@ -306,13 +312,13 @@ class PDFService:
 
             logger.info(
 
-                "PDF read completed."
+                "PDF read successfully."
 
             )
 
             return "\n".join(
 
-                texts,
+                pages,
 
             )
 
@@ -348,7 +354,7 @@ class PDFService:
 
         logger.info(
 
-            "Loading document pages : %s",
+            "Loading pages : %s",
 
             filename,
 
@@ -394,7 +400,7 @@ class PDFService:
 
             logger.exception(
 
-                "Unable to load document pages: %s",
+                "Unable to load pages: %s",
 
                 e,
 
@@ -425,13 +431,19 @@ class PDFService:
 
         ).strip()
 
-        if keyword == "":
+        if not keyword:
+
+            logger.warning(
+
+                "Empty search keyword."
+
+            )
 
             return []
 
         logger.info(
 
-            "Document Search : %s",
+            "Searching documents : %s",
 
             keyword,
 
@@ -451,13 +463,15 @@ class PDFService:
 
                 WHERE
 
-                    content LIKE ?
+                    filename LIKE ?
 
-                    OR filename LIKE ?
+                    OR document_type LIKE ?
 
                     OR model LIKE ?
 
                     OR category LIKE ?
+
+                    OR content LIKE ?
 
                 ORDER BY
 
@@ -479,6 +493,8 @@ class PDFService:
 
                     f"%{keyword}%",
 
+                    f"%{keyword}%",
+
                     limit,
 
                 ),
@@ -487,7 +503,7 @@ class PDFService:
 
             logger.info(
 
-                "Search returned %s rows.",
+                "Found %s document(s).",
 
                 len(rows),
 
@@ -512,7 +528,7 @@ class PDFService:
             conn.close()
 
     # ==========================================================
-    # Import Upload File
+    # Import Upload
     # ==========================================================
 
     def import_upload(
@@ -530,6 +546,22 @@ class PDFService:
         category="",
 
     ):
+
+        if file is None:
+
+            raise ValueError(
+
+                "File is required."
+
+            )
+
+        if not file.filename:
+
+            raise ValueError(
+
+                "Filename is required."
+
+            )
 
         logger.info(
 
@@ -553,11 +585,13 @@ class PDFService:
 
         )
 
-        filepath = upload_path / Path(
+        filename = Path(
 
             file.filename,
 
         ).name
+
+        filepath = upload_path / filename
 
         file.save(
 
@@ -581,7 +615,7 @@ class PDFService:
 
             ),
 
-            filename=filepath.name,
+            filename=filename,
 
             document_type=document_type,
 
@@ -606,11 +640,33 @@ class PDFService:
 
         )
 
+        conn = connect()
+
+        try:
+
+            conn.execute(
+
+                "SELECT 1"
+
+            ).fetchone()
+
+            database = True
+
+        except Exception:
+
+            database = False
+
+        finally:
+
+            conn.close()
+
         return {
 
             "success": True,
 
             "service": "pdf_service",
+
+            "database": database,
 
             "status": "ok",
 
@@ -660,7 +716,7 @@ class PDFService:
 
             filepath,
 
-        ).exists()
+        ).is_file()
 
     # ==========================================================
     # Page Count
@@ -715,26 +771,9 @@ class PDFService:
             if doc is not None:
 
                 doc.close()
-# ==========================================================
-# Rebuild Database
-# ==========================================================
-
-    def rebuild(
-
-        self,
-
-    ):
-
-        logger.info(
-
-            "Rebuilding PDF database..."
-
-        )
-
-        return self.build()
 
     # ==========================================================
-    # Statistics
+    # Total Documents
     # ==========================================================
 
     def total_documents(
@@ -761,11 +800,7 @@ class PDFService:
 
             ).fetchone()
 
-            if row is None:
-
-                return 0
-
-            return row["total"]
+            return row["total"] if row else 0
 
         finally:
 
@@ -803,15 +838,14 @@ class PDFService:
 
             ).fetchone()
 
-            if row is None:
-
-                return 0
-
-            return row["total"]
+            return row["total"] if row else 0
 
         finally:
 
             conn.close()
+# ==========================================================
+# End of Class
+# ==========================================================
 
 
 # ==========================================================
