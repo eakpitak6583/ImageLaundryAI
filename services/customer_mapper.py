@@ -67,7 +67,7 @@ class CustomerMapper:
 
             "customer_id": customer_id,
 
-            "customer_name": customer,
+            "customer_name": self.normalize(customer),
 
         }
 
