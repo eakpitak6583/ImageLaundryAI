@@ -822,3 +822,90 @@ IMPORTANT
         )
 
         return cleaned
+    # ==========================================================
+    # Default Fields
+    # ==========================================================
+
+    def default_fields(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Applying default fields..."
+
+        )
+
+        if data is None:
+
+            data = {}
+
+        defaults = {
+
+            # Repair
+
+            "job_no": "",
+
+            "repair_date": "",
+
+            "complaint": "",
+
+            "detail": "",
+
+            "repair_action": "",
+
+            "result": "",
+
+            "document_type": "",
+
+            "report_file": "",
+
+            # Machine
+
+            "brand": "",
+
+            "machine_model": "",
+
+            "sap_no": "",
+
+            "serial_no": "",
+
+            "machine_id": None,
+
+            # Customer
+
+            "customer": "",
+
+            "customer_id": None,
+
+            # Technician
+
+            "technician": "",
+
+            "employee_code": "",
+
+            "technician_id": None,
+
+        }
+
+        for key, value in defaults.items():
+
+            if key not in data:
+
+                data[key] = value
+
+            elif data[key] is None:
+
+                data[key] = value
+
+        logger.info(
+
+            "Default fields applied."
+
+        )
+
+        return data
