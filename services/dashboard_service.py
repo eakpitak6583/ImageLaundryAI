@@ -1,18 +1,16 @@
-"""
-LaundryBot V7 Enterprise
-Dashboard Service
-"""
+def summary(
 
-from repositories.dashboard_repository import dashboard_repository
+    self,
 
+):
 
-class DashboardService:
+    logger.info(
 
-    def __init__(self):
+        "Loading dashboard summary..."
 
-        self.repo = dashboard_repository
+    )
 
-    def summary(self):
+    try:
 
         return {
 
@@ -32,5 +30,24 @@ class DashboardService:
 
         }
 
+    except Exception as e:
 
-dashboard_service = DashboardService()
+        logger.exception(e)
+
+        return {
+
+            "customer_total": 0,
+
+            "machine_total": 0,
+
+            "repair_total": 0,
+
+            "repair_today": 0,
+
+            "part_total": 0,
+
+            "document_total": 0,
+
+            "technician_total": 0,
+
+        }
