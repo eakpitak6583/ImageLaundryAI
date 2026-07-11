@@ -4,14 +4,19 @@ RAG Service
 """
 
 import logging
-from pathlib import Path
-
-from openai import (
-    OpenAI,
+from datetime import (
+    datetime,
+)
+from pathlib import (
+    Path,
 )
 
 from langchain_community.vectorstores import (
     FAISS,
+)
+
+from openai import (
+    OpenAI,
 )
 
 from config import (
@@ -20,6 +25,10 @@ from config import (
 
 from services.embedding_service import (
     embedding_service,
+)
+
+from services.prompt_service import (
+    prompt_service,
 )
 
 logger = logging.getLogger(
@@ -68,6 +77,38 @@ class RagService:
         )
 
     # ==========================================================
+    # Empty Result
+    # ==========================================================
+
+    def empty_result(
+
+        self,
+
+        question="",
+
+        message="ไม่พบข้อมูลในฐานความรู้",
+
+    ):
+
+        return {
+
+            "success": False,
+
+            "answer": message,
+
+            "sources": [],
+
+            "search_keyword": question,
+
+            "count": 0,
+
+            "model": Config.MODEL_NAME,
+
+            "timestamp": datetime.now().isoformat(),
+
+        }
+
+    # ==========================================================
     # Health
     # ==========================================================
 
@@ -77,11 +118,21 @@ class RagService:
 
     ):
 
+        index = self.vector_path / "index.faiss"
+
         return {
 
             "success": True,
 
             "service": "rag_service",
+
+            "vector_loaded": (
+
+                self.vector_db is not None
+
+            ),
+
+            "vector_exists": index.exists(),
 
             "vector_path": str(
 
@@ -89,11 +140,7 @@ class RagService:
 
             ),
 
-            "vector_loaded": (
-
-                self.vector_db is not None
-
-            ),
+            "model": Config.MODEL_NAME,
 
             "status": "ok",
 
@@ -166,13 +213,14 @@ class RagService:
 
             logger.exception(
 
-                "Failed to load vector database: %s",
+                "Unable to load vector database: %s",
 
                 e,
 
             )
 
             raise
+
     # ==========================================================
     # Search
     # ==========================================================
@@ -195,19 +243,13 @@ class RagService:
 
         if question == "":
 
-            logger.warning(
-
-                "Empty search question."
-
-            )
-
             return {
 
                 "success": False,
 
-                "documents": [],
-
                 "context": "",
+
+                "sources": [],
 
                 "count": 0,
 
@@ -225,19 +267,13 @@ class RagService:
 
         if db is None:
 
-            logger.warning(
-
-                "Vector database unavailable."
-
-            )
-
             return {
 
                 "success": False,
 
-                "documents": [],
-
                 "context": "",
+
+                "sources": [],
 
                 "count": 0,
 
@@ -267,25 +303,21 @@ class RagService:
 
         if not documents:
 
-            logger.info(
-
-                "No related documents found."
-
-            )
-
             return {
 
                 "success": True,
 
-                "documents": [],
-
                 "context": "",
+
+                "sources": [],
 
                 "count": 0,
 
             }
 
         context = []
+
+        sources = []
 
         for index, document in enumerate(
 
@@ -337,13 +369,27 @@ PAGE : {page}
 
             )
 
+            sources.append(
+
+                {
+
+                    "filename": filename,
+
+                    "page": page,
+
+                    "content": content[:300],
+
+                }
+
+            )
+
         logger.info(
 
             "Retrieved %s document(s).",
 
             len(
 
-                documents,
+                sources,
 
             ),
 
@@ -353,17 +399,17 @@ PAGE : {page}
 
             "success": True,
 
-            "documents": documents,
-
             "context": "\n".join(
 
                 context,
 
             ),
 
+            "sources": sources,
+
             "count": len(
 
-                documents,
+                sources,
 
             ),
 
@@ -390,21 +436,11 @@ PAGE : {page}
 
         if question == "":
 
-            return {
+            return self.empty_result(
 
-                "success": False,
+                message="กรุณาระบุคำถาม",
 
-                "answer": "กรุณาระบุคำถาม",
-
-                "sources": [],
-
-                "documents": [],
-
-                "search_keyword": "",
-
-                "count": 0,
-
-            }
+            )
 
         logger.info(
 
@@ -422,17 +458,33 @@ PAGE : {page}
 
         )
 
-        documents = search_result[
+        if not search_result.get(
 
-            "documents"
+            "success",
 
-        ]
+        ):
 
-        knowledge = search_result[
+            return self.empty_result(
 
-            "context"
+                question,
 
-        ]
+            )
+
+        knowledge = search_result.get(
+
+            "context",
+
+            "",
+
+        )
+
+        sources = search_result.get(
+
+            "sources",
+
+            [],
+
+        )
 
         if knowledge == "":
 
@@ -442,57 +494,19 @@ PAGE : {page}
 
             )
 
-            return {
+            return self.empty_result(
 
-                "success": False,
+                question,
 
-                "answer": "ไม่พบข้อมูลในฐานความรู้",
+            )
 
-                "sources": [],
+        prompt = prompt_service.rag_prompt(
 
-                "documents": [],
+            knowledge=knowledge,
 
-                "search_keyword": question,
+            question=question,
 
-                "count": 0,
-
-            }
-
-        prompt = f"""
-คุณคือ LaundryBot V7 Enterprise
-
-หน้าที่ของคุณคือผู้ช่วยวิศวกรซ่อมเครื่องซักผ้าอุตสาหกรรม
-
-ให้ตอบโดยอ้างอิงจากข้อมูลในฐานความรู้ด้านล่างเท่านั้น
-
-==========================
-KNOWLEDGE
-==========================
-
-{knowledge}
-
-==========================
-QUESTION
-==========================
-
-{question}
-
-==========================
-RULES
-==========================
-
-1. ตอบเฉพาะข้อมูลที่อยู่ใน KNOWLEDGE
-
-2. หากไม่มีข้อมูลเพียงพอให้ตอบว่า
-
-"ไม่พบข้อมูลในฐานความรู้"
-
-3. ห้ามเดา
-
-4. หากอ้างอิงข้อมูลให้ระบุ FILE และ PAGE
-
-ตอบเป็นภาษาไทย
-"""
+        )
 
         try:
 
@@ -518,30 +532,6 @@ RULES
 
                 answer = "ไม่พบข้อมูลในฐานความรู้"
 
-            sources = []
-
-            for document in documents:
-
-                sources.append({
-
-                    "filename": document.metadata.get(
-
-                        "filename",
-
-                        "",
-
-                    ),
-
-                    "page": document.metadata.get(
-
-                        "page",
-
-                        0,
-
-                    ),
-
-                })
-
             logger.info(
 
                 "AI response generated successfully."
@@ -556,8 +546,6 @@ RULES
 
                 "sources": sources,
 
-                "documents": documents,
-
                 "search_keyword": question,
 
                 "count": len(
@@ -565,6 +553,10 @@ RULES
                     sources,
 
                 ),
+
+                "model": Config.MODEL_NAME,
+
+                "timestamp": datetime.now().isoformat(),
 
             }
 
@@ -578,7 +570,89 @@ RULES
 
             )
 
-            raise
+            return {
+
+                "success": False,
+
+                "answer": "",
+
+                "message": str(
+
+                    e,
+
+                ),
+
+                "sources": [],
+
+                "search_keyword": question,
+
+                "count": 0,
+
+                "model": Config.MODEL_NAME,
+
+                "timestamp": datetime.now().isoformat(),
+
+            }
+
+    # ==========================================================
+    # Ask JSON
+    # ==========================================================
+
+    def ask_json(
+
+        self,
+
+        question,
+
+        top_k=5,
+
+    ):
+
+        return self.ask(
+
+            question,
+
+            top_k,
+
+        )
+    # ==========================================================
+    # Build Query
+    # ==========================================================
+
+    def build_query(
+
+        self,
+
+        **kwargs,
+
+    ):
+
+        sections = []
+
+        for title, value in kwargs.items():
+
+            value = str(
+
+                value or "",
+
+            ).strip()
+
+            if not value:
+
+                continue
+
+            sections.append(
+
+                f"{title}\n\n{value}"
+
+            )
+
+        return "\n\n".join(
+
+            sections,
+
+        )
+
     # ==========================================================
     # Ask Machine
     # ==========================================================
@@ -595,18 +669,6 @@ RULES
 
     ):
 
-        machine = str(
-
-            machine or "",
-
-        ).strip()
-
-        symptom = str(
-
-            symptom or "",
-
-        ).strip()
-
         logger.info(
 
             "Machine Question : %s | %s",
@@ -617,17 +679,13 @@ RULES
 
         )
 
-        query = f"""
+        query = self.build_query(
 
-Machine
+            Machine=machine,
 
-{machine}
+            Problem=symptom,
 
-Problem
-
-{symptom}
-
-"""
+        )
 
         return self.ask(
 
@@ -653,18 +711,6 @@ Problem
 
     ):
 
-        machine = str(
-
-            machine or "",
-
-        ).strip()
-
-        keyword = str(
-
-            keyword or "",
-
-        ).strip()
-
         logger.info(
 
             "Manual Search : %s | %s",
@@ -675,17 +721,13 @@ Problem
 
         )
 
-        query = f"""
+        query = self.build_query(
 
-Machine
+            Machine=machine,
 
-{machine}
+            Keyword=keyword,
 
-Keyword
-
-{keyword}
-
-"""
+        )
 
         return self.ask(
 
@@ -713,24 +755,6 @@ Keyword
 
     ):
 
-        machine = str(
-
-            machine or "",
-
-        ).strip()
-
-        error_code = str(
-
-            error_code or "",
-
-        ).strip()
-
-        symptom = str(
-
-            symptom or "",
-
-        ).strip()
-
         logger.info(
 
             "Repair Question : %s",
@@ -739,21 +763,15 @@ Keyword
 
         )
 
-        query = f"""
+        query = self.build_query(
 
-Machine
+            Machine=machine,
 
-{machine}
+            Error_Code=error_code,
 
-Error Code
+            Symptom=symptom,
 
-{error_code}
-
-Symptom
-
-{symptom}
-
-"""
+        )
 
         return self.ask(
 
@@ -764,34 +782,26 @@ Symptom
         )
 
     # ==========================================================
-    # Version
+    # Search JSON
     # ==========================================================
 
-    def version(
+    def search_json(
 
         self,
 
+        question,
+
+        top_k=5,
+
     ):
 
-        return {
+        return self.search(
 
-            "name": "LaundryBot V7 Enterprise",
+            question,
 
-            "module": "RAG Service",
+            top_k,
 
-            "version": getattr(
-
-                Config,
-
-                "VERSION",
-
-                "7.0",
-
-            ),
-
-            "model": Config.MODEL_NAME,
-
-        }
+        )
     # ==========================================================
     # Clear Cache
     # ==========================================================
@@ -840,6 +850,8 @@ Symptom
 
     ):
 
+        index = self.vector_path / "index.faiss"
+
         return {
 
             "vector_loaded": (
@@ -847,6 +859,8 @@ Symptom
                 self.vector_db is not None
 
             ),
+
+            "vector_exists": index.exists(),
 
             "vector_path": str(
 
@@ -857,6 +871,70 @@ Symptom
             "model": Config.MODEL_NAME,
 
         }
+
+    # ==========================================================
+    # Version
+    # ==========================================================
+
+    def version(
+
+        self,
+
+    ):
+
+        return {
+
+            "name": "LaundryBot V7 Enterprise",
+
+            "module": "RAG Service",
+
+            "version": getattr(
+
+                Config,
+
+                "VERSION",
+
+                "7.0",
+
+            ),
+
+            "model": Config.MODEL_NAME,
+
+            "embedding_model": getattr(
+
+                Config,
+
+                "EMBEDDING_MODEL",
+
+                "text-embedding-3-small",
+
+            ),
+
+        }
+
+    # ==========================================================
+    # Ready
+    # ==========================================================
+
+    def is_ready(
+
+        self,
+
+    ):
+
+        index = self.vector_path / "index.faiss"
+
+        return (
+
+            bool(
+
+                Config.OPENAI_API_KEY,
+
+            )
+
+            and index.exists()
+
+        )
 
 
 # ==========================================================
