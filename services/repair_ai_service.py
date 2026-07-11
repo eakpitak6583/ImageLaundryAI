@@ -1,8 +1,50 @@
+"""
+LaundryBot V7 Enterprise
+Repair AI Service
+"""
+
+import json
+import logging
+
+from openai import OpenAI
+
+from config import Config
+
+from services.pdf_service import (
+    pdf_service,
+)
+
+from services.prompt_service import (
+    prompt_service,
+)
+
+from services.customer_mapper import (
+    customer_mapper,
+)
+
+from services.machine_mapper import (
+    machine_mapper,
+)
+
+from services.technician_mapper import (
+    technician_mapper,
+)
+
+
+logger = logging.getLogger(__name__)
+
+
+class RepairAIService:
+
     # ==========================================================
     # Constructor
     # ==========================================================
 
-    def __init__(self):
+    def __init__(
+
+        self,
+
+    ):
 
         self.client = OpenAI(
 
@@ -15,11 +57,11 @@
             "Repair AI Service Initialized"
 
         )
+
     # ==========================================================
     # Build Prompt
     # ==========================================================
-
-    def build_prompt(
+        def build_prompt(
 
         self,
 
@@ -62,6 +104,7 @@ IMPORTANT
 - ห้ามใส่ ```json
 
 """
+
     # ==========================================================
     # Read PDF
     # ==========================================================
@@ -92,7 +135,7 @@ IMPORTANT
 
         text = pdf_service.read(
 
-            filepath
+            filepath,
 
         )
 
@@ -123,11 +166,11 @@ IMPORTANT
         )
 
         return text
+
     # ==========================================================
     # Ask OpenAI
     # ==========================================================
-
-    def ask_ai(
+        def ask_ai(
 
         self,
 
@@ -143,7 +186,7 @@ IMPORTANT
 
         prompt = self.build_prompt(
 
-            report_text
+            report_text,
 
         )
 
@@ -186,6 +229,7 @@ IMPORTANT
             )
 
             raise
+
     # ==========================================================
     # Parse JSON
     # ==========================================================
@@ -294,7 +338,7 @@ IMPORTANT
 
             data = json.loads(
 
-                text
+                text,
 
             )
 
@@ -310,7 +354,7 @@ IMPORTANT
 
             logger.error(
 
-                text
+                text,
 
             )
 
@@ -327,11 +371,11 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Extract PDF
     # ==========================================================
-
-    def extract_pdf(
+        def extract_pdf(
 
         self,
 
@@ -347,7 +391,7 @@ IMPORTANT
 
         report_text = self.read_pdf(
 
-            filepath
+            filepath,
 
         )
 
@@ -359,7 +403,7 @@ IMPORTANT
 
         ai_response = self.ask_ai(
 
-            report_text
+            report_text,
 
         )
 
@@ -371,7 +415,7 @@ IMPORTANT
 
         data = self.parse_json(
 
-            ai_response
+            ai_response,
 
         )
 
@@ -404,6 +448,7 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Normalize
     # ==========================================================
@@ -482,13 +527,11 @@ IMPORTANT
 
                 value = str(
 
-                    value
+                    value,
 
                 )
 
-            value = value.strip()
-
-            result[field] = value
+            result[field] = value.strip()
 
         logger.info(
 
@@ -497,11 +540,11 @@ IMPORTANT
         )
 
         return result
+
     # ==========================================================
     # Validate
     # ==========================================================
-
-    def validate(
+        def validate(
 
         self,
 
@@ -539,21 +582,15 @@ IMPORTANT
 
         for field in required_fields:
 
-            value = data.get(
-
-                field,
-
-                "",
-
-            )
-
-            if value is None:
-
-                value = ""
-
             value = str(
 
-                value
+                data.get(
+
+                    field,
+
+                    "",
+
+                )
 
             ).strip()
 
@@ -595,9 +632,13 @@ IMPORTANT
 
         for field in optional_fields:
 
-            if field not in data:
+            data.setdefault(
 
-                data[field] = ""
+                field,
+
+                "",
+
+            )
 
         logger.info(
 
@@ -606,6 +647,7 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Detect Report Type
     # ==========================================================
@@ -624,7 +666,7 @@ IMPORTANT
 
         )
 
-        job_no = str(
+        if str(
 
             data.get(
 
@@ -634,9 +676,11 @@ IMPORTANT
 
             )
 
-        ).strip()
+        ).strip():
 
-        complaint = str(
+            return "service_report"
+
+        if str(
 
             data.get(
 
@@ -646,85 +690,44 @@ IMPORTANT
 
             )
 
-        ).strip()
-
-        repair_action = str(
-
-            data.get(
-
-                "repair_action",
-
-                "",
-
-            )
-
-        ).strip()
-
-        result = str(
-
-            data.get(
-
-                "result",
-
-                "",
-
-            )
-
-        ).strip()
-
-        # ------------------------------------------------------
-        # Service Report
-        # ------------------------------------------------------
-
-        if job_no != "":
-
-            logger.info(
-
-                "Report Type : service_report"
-
-            )
-
-            return "service_report"
-
-        # ------------------------------------------------------
-        # Repair Report
-        # ------------------------------------------------------
-
-        if complaint != "":
-
-            logger.info(
-
-                "Report Type : repair_report"
-
-            )
+        ).strip():
 
             return "repair_report"
 
-        # ------------------------------------------------------
-        # AI Generated
-        # ------------------------------------------------------
+        if (
 
-        if repair_action != "" or result != "":
+            str(
 
-            logger.info(
+                data.get(
 
-                "Report Type : ai_repair"
+                    "repair_action",
 
-            )
+                    "",
+
+                )
+
+            ).strip()
+
+            or
+
+            str(
+
+                data.get(
+
+                    "result",
+
+                    "",
+
+                )
+
+            ).strip()
+
+        ):
 
             return "ai_repair"
 
-        # ------------------------------------------------------
-        # Unknown
-        # ------------------------------------------------------
-
-        logger.warning(
-
-            "Unknown report type."
-
-        )
-
         return "unknown"
+
     # ==========================================================
     # Clean Result
     # ==========================================================
@@ -737,30 +740,6 @@ IMPORTANT
 
     ):
 
-        logger.info(
-
-            "Cleaning AI result..."
-
-        )
-
-        if data is None:
-
-            return {}
-
-        if not isinstance(
-
-            data,
-
-            dict,
-
-        ):
-
-            raise ValueError(
-
-                "AI result must be dictionary."
-
-            )
-
         cleaned = {}
 
         for key, value in data.items():
@@ -769,19 +748,11 @@ IMPORTANT
 
                 value = ""
 
-            if not isinstance(
+            value = str(
 
                 value,
 
-                str,
-
-            ):
-
-                value = str(
-
-                    value
-
-                )
+            )
 
             value = value.replace(
 
@@ -815,13 +786,8 @@ IMPORTANT
 
             cleaned[key] = value.strip()
 
-        logger.info(
-
-            "Clean Result completed."
-
-        )
-
         return cleaned
+
     # ==========================================================
     # Default Fields
     # ==========================================================
@@ -834,37 +800,11 @@ IMPORTANT
 
     ):
 
-        logger.info(
-
-            "Applying default fields..."
-
-        )
-
-        if data is None:
-
-            data = {}
-
         defaults = {
-
-            # Repair
 
             "job_no": "",
 
             "repair_date": "",
-
-            "complaint": "",
-
-            "detail": "",
-
-            "repair_action": "",
-
-            "result": "",
-
-            "document_type": "",
-
-            "report_file": "",
-
-            # Machine
 
             "brand": "",
 
@@ -874,19 +814,27 @@ IMPORTANT
 
             "serial_no": "",
 
-            "machine_id": None,
-
-            # Customer
-
             "customer": "",
 
-            "customer_id": None,
+            "complaint": "",
 
-            # Technician
+            "detail": "",
+
+            "repair_action": "",
+
+            "result": "",
 
             "technician": "",
 
             "employee_code": "",
+
+            "document_type": "",
+
+            "report_file": "",
+
+            "customer_id": None,
+
+            "machine_id": None,
 
             "technician_id": None,
 
@@ -894,23 +842,18 @@ IMPORTANT
 
         for key, value in defaults.items():
 
-            if key not in data:
+            data.setdefault(
 
-                data[key] = value
+                key,
 
-            elif data[key] is None:
+                value,
 
-                data[key] = value
-
-        logger.info(
-
-            "Default fields applied."
-
-        )
+            )
 
         return data
+
     # ==========================================================
-    # Prepare Data
+    # Prepare
     # ==========================================================
 
     def prepare(
@@ -923,13 +866,9 @@ IMPORTANT
 
         logger.info(
 
-            "Preparing repair data..."
+            "Preparing AI data..."
 
         )
-
-        # ------------------------------------------------------
-        # AI Extraction
-        # ------------------------------------------------------
 
         data = self.extract_pdf(
 
@@ -937,19 +876,11 @@ IMPORTANT
 
         )
 
-        # ------------------------------------------------------
-        # Normalize
-        # ------------------------------------------------------
-
         data = self.normalize(
 
             data,
 
         )
-
-        # ------------------------------------------------------
-        # Validate
-        # ------------------------------------------------------
 
         data = self.validate(
 
@@ -957,29 +888,17 @@ IMPORTANT
 
         )
 
-        # ------------------------------------------------------
-        # Clean Result
-        # ------------------------------------------------------
-
         data = self.clean_result(
 
             data,
 
         )
 
-        # ------------------------------------------------------
-        # Default Fields
-        # ------------------------------------------------------
-
         data = self.default_fields(
 
             data,
 
         )
-
-        # ------------------------------------------------------
-        # Detect Report Type
-        # ------------------------------------------------------
 
         data["document_type"] = self.detect_report_type(
 
@@ -994,11 +913,11 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Mapping
     # ==========================================================
-
-    def mapping(
+        def mapping(
 
         self,
 
@@ -1018,7 +937,7 @@ IMPORTANT
 
         customer = customer_mapper.mapping(
 
-            data
+            data,
 
         )
 
@@ -1026,7 +945,7 @@ IMPORTANT
 
             data.update(
 
-                customer
+                customer,
 
             )
 
@@ -1036,7 +955,7 @@ IMPORTANT
 
             data.get(
 
-                "customer_id"
+                "customer_id",
 
             ),
 
@@ -1052,7 +971,7 @@ IMPORTANT
 
             data.get(
 
-                "customer_id"
+                "customer_id",
 
             ),
 
@@ -1062,7 +981,7 @@ IMPORTANT
 
             data.update(
 
-                machine
+                machine,
 
             )
 
@@ -1072,7 +991,7 @@ IMPORTANT
 
             data.get(
 
-                "machine_id"
+                "machine_id",
 
             ),
 
@@ -1084,7 +1003,7 @@ IMPORTANT
 
         technician = technician_mapper.mapping(
 
-            data
+            data,
 
         )
 
@@ -1092,7 +1011,7 @@ IMPORTANT
 
             data.update(
 
-                technician
+                technician,
 
             )
 
@@ -1102,7 +1021,7 @@ IMPORTANT
 
             data.get(
 
-                "technician_id"
+                "technician_id",
 
             ),
 
@@ -1115,6 +1034,7 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Import PDF
     # ==========================================================
@@ -1147,19 +1067,11 @@ IMPORTANT
 
         )
 
-        # ------------------------------------------------------
-        # Prepare
-        # ------------------------------------------------------
-
         data = self.prepare(
 
             filepath,
 
         )
-
-        # ------------------------------------------------------
-        # Mapping
-        # ------------------------------------------------------
 
         data = self.mapping(
 
@@ -1167,15 +1079,11 @@ IMPORTANT
 
         )
 
-        # ------------------------------------------------------
-        # Save File
-        # ------------------------------------------------------
-
         data["report_file"] = filepath
 
         logger.info(
 
-            "Import Completed"
+            "AI Repair Import Completed"
 
         )
 
@@ -1185,7 +1093,7 @@ IMPORTANT
 
             data.get(
 
-                "job_no"
+                "job_no",
 
             ),
 
@@ -1197,7 +1105,7 @@ IMPORTANT
 
             data.get(
 
-                "machine_model"
+                "machine_model",
 
             ),
 
@@ -1209,7 +1117,7 @@ IMPORTANT
 
             data.get(
 
-                "customer_id"
+                "customer_id",
 
             ),
 
@@ -1221,7 +1129,7 @@ IMPORTANT
 
             data.get(
 
-                "machine_id"
+                "machine_id",
 
             ),
 
@@ -1233,7 +1141,7 @@ IMPORTANT
 
             data.get(
 
-                "technician_id"
+                "technician_id",
 
             ),
 
@@ -1246,6 +1154,7 @@ IMPORTANT
         )
 
         return data
+
     # ==========================================================
     # Safe Import
     # ==========================================================
@@ -1323,3 +1232,10 @@ IMPORTANT
             )
 
             raise
+
+
+# ==========================================================
+# Singleton
+# ==========================================================
+
+repair_ai_service = RepairAIService()
