@@ -186,4 +186,145 @@ IMPORTANT
             )
 
             raise
+    # ==========================================================
+    # Parse JSON
+    # ==========================================================
+
+    def parse_json(
+
+        self,
+
+        text,
+
+    ):
+
+        if text is None:
+
+            raise ValueError(
+
+                "OpenAI response is None."
+
+            )
+
+        text = str(
+
+            text
+
+        ).strip()
+
+        if text == "":
+
+            raise ValueError(
+
+                "OpenAI returned empty response."
+
+            )
+
+        logger.info(
+
+            "Parsing OpenAI JSON..."
+
+        )
+
+        if text.startswith(
+
+            "```json"
+
+        ):
+
+            text = (
+
+                text
+
+                .replace(
+
+                    "```json",
+
+                    "",
+
+                )
+
+                .replace(
+
+                    "```",
+
+                    "",
+
+                )
+
+                .strip()
+
+            )
+
+        elif text.startswith(
+
+            "```"
+
+        ):
+
+            text = (
+
+                text
+
+                .replace(
+
+                    "```",
+
+                    "",
+
+                )
+
+                .strip()
+
+            )
+
+        start = text.find("{")
+
+        end = text.rfind("}")
+
+        if start != -1 and end != -1:
+
+            text = text[
+
+                start:end + 1
+
+            ]
+
+        try:
+
+            data = json.loads(
+
+                text
+
+            )
+
+        except json.JSONDecodeError as e:
+
+            logger.exception(
+
+                "Invalid JSON : %s",
+
+                e,
+
+            )
+
+            logger.error(
+
+                text
+
+            )
+
+            raise ValueError(
+
+                "OpenAI returned invalid JSON."
+
+            )
+
+        logger.info(
+
+            "JSON parsed successfully."
+
+        )
+
+        return data
 
