@@ -123,3 +123,67 @@ IMPORTANT
         )
 
         return text
+    # ==========================================================
+    # Ask OpenAI
+    # ==========================================================
+
+    def ask_ai(
+
+        self,
+
+        report_text,
+
+    ):
+
+        logger.info(
+
+            "Sending repair report to OpenAI..."
+
+        )
+
+        prompt = self.build_prompt(
+
+            report_text
+
+        )
+
+        try:
+
+            response = self.client.responses.create(
+
+                model=Config.MODEL_NAME,
+
+                input=prompt,
+
+            )
+
+            result = response.output_text.strip()
+
+            if result == "":
+
+                raise ValueError(
+
+                    "OpenAI returned empty response."
+
+                )
+
+            logger.info(
+
+                "OpenAI response received."
+
+            )
+
+            return result
+
+        except Exception as e:
+
+            logger.exception(
+
+                "OpenAI Error : %s",
+
+                e,
+
+            )
+
+            raise
+
