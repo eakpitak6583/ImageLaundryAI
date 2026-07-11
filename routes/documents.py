@@ -327,3 +327,561 @@ def view_pdf():
         download_name=filename,
 
     )
+# ==========================================================
+# Document Home
+# ==========================================================
+
+@documents_bp.route(
+
+    "/",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def index():
+
+    logger.info(
+
+        "Loading document dashboard..."
+
+    )
+
+    try:
+
+        logs = document_service.import_logs()
+
+    except Exception as e:
+
+        logger.exception(
+
+            e,
+
+        )
+
+        flash(
+
+            "Unable to load document list.",
+
+            "danger",
+
+        )
+
+        logs = []
+
+    return render_template(
+
+        "documents.html",
+
+        logs=logs,
+
+    )
+# ==========================================================
+# Upload PDF
+# ==========================================================
+
+@documents_bp.route(
+
+    "/upload",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+def upload():
+
+    logger.info(
+
+        "Document upload started."
+
+    )
+
+    try:
+
+        result = document_service.import_pdf(
+
+            request.files,
+
+            request.form,
+
+        )
+
+        if not result.get(
+
+            "success",
+
+        ):
+
+            flash(
+
+                result.get(
+
+                    "message",
+
+                    "Import failed.",
+
+                ),
+
+                "warning",
+
+            )
+
+            return redirect(
+
+                url_for(
+
+                    "documents.index",
+
+                )
+
+            )
+
+        flash(
+
+            f"Import completed ({result['pages']} pages).",
+
+            "success",
+
+        )
+
+    except Exception as e:
+
+        logger.exception(
+
+            e,
+
+        )
+
+        flash(
+
+            "Import failed.",
+
+            "danger",
+
+        )
+
+    return redirect(
+
+        url_for(
+
+            "documents.index",
+
+        )
+
+    )
+# ==========================================================
+# Search Document
+# ==========================================================
+
+@documents_bp.route(
+
+    "/search",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def search():
+
+    keyword = request.args.get(
+
+        "q",
+
+        "",
+
+    ).strip()
+
+    logger.info(
+
+        "Document Search : %s",
+
+        keyword,
+
+    )
+
+    try:
+
+        if keyword:
+
+            rows = document_service.search(
+
+                keyword,
+
+            )
+
+        else:
+
+            rows = []
+
+    except Exception as e:
+
+        logger.exception(
+
+            e,
+
+        )
+
+        flash(
+
+            "Unable to search documents.",
+
+            "danger",
+
+        )
+
+        rows = []
+
+    return render_template(
+
+        "document_search.html",
+
+        keyword=keyword,
+
+        rows=rows,
+
+    )
+
+
+# ==========================================================
+# Rebuild Vector Database
+# ==========================================================
+
+@documents_bp.route(
+
+    "/rebuild",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+def rebuild():
+
+    logger.info(
+
+        "Rebuilding embedding database..."
+
+    )
+
+    try:
+
+        result = document_service.rebuild_embedding()
+
+        if not result.get(
+
+            "success",
+
+        ):
+
+            flash(
+
+                result.get(
+
+                    "message",
+
+                    "Vector rebuild failed.",
+
+                ),
+
+                "warning",
+
+            )
+
+            return redirect(
+
+                url_for(
+
+                    "documents.index",
+
+                )
+
+            )
+
+        flash(
+
+            f"Vector rebuilt successfully ({result['pages']} pages).",
+
+            "success",
+
+        )
+
+    except Exception as e:
+
+        logger.exception(
+
+            e,
+
+        )
+
+        flash(
+
+            "Vector rebuild failed.",
+
+            "danger",
+
+        )
+
+    return redirect(
+
+        url_for(
+
+            "documents.index",
+
+        )
+
+    )
+# ==========================================================
+# PDF Viewer
+# ==========================================================
+
+@documents_bp.route(
+
+    "/viewer",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def viewer():
+
+    filename = request.args.get(
+
+        "file",
+
+        "",
+
+    ).strip()
+
+    page = request.args.get(
+
+        "page",
+
+        1,
+
+        type=int,
+
+    )
+
+    if filename == "":
+
+        flash(
+
+            "Document not found.",
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "documents.index",
+
+            )
+
+        )
+
+    return render_template(
+
+        "pdf_viewer.html",
+
+        filename=filename,
+
+        page=page,
+
+    )
+
+
+# ==========================================================
+# Stream PDF
+# ==========================================================
+
+@documents_bp.route(
+
+    "/view",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def view_pdf():
+
+    filename = request.args.get(
+
+        "file",
+
+        "",
+
+    ).strip()
+
+    if filename == "":
+
+        flash(
+
+            "Document not found.",
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "documents.index",
+
+            )
+
+        )
+
+    try:
+
+        return document_service.view_pdf(
+
+            filename,
+
+        )
+
+    except FileNotFoundError:
+
+        flash(
+
+            "PDF file not found.",
+
+            "warning",
+
+        )
+
+    except Exception as e:
+
+        logger.exception(
+
+            e,
+
+        )
+
+        flash(
+
+            "Unable to open PDF.",
+
+            "danger",
+
+        )
+
+    return redirect(
+
+        url_for(
+
+            "documents.index",
+
+        )
+
+    )
+# ==========================================================
+# Error Handler
+# ==========================================================
+
+@documents_bp.errorhandler(
+
+    404,
+
+)
+
+def not_found(
+
+    error,
+
+):
+
+    logger.warning(
+
+        "404 : %s",
+
+        error,
+
+    )
+
+    flash(
+
+        "Document page not found.",
+
+        "warning",
+
+    )
+
+    return redirect(
+
+        url_for(
+
+            "documents.index",
+
+        )
+
+    )
+
+
+@documents_bp.errorhandler(
+
+    500,
+
+)
+
+def internal_error(
+
+    error,
+
+):
+
+    logger.exception(
+
+        error,
+
+    )
+
+    flash(
+
+        "Internal Server Error.",
+
+        "danger",
+
+    )
+
+    return redirect(
+
+        url_for(
+
+            "documents.index",
+
+        )
+
+    )
