@@ -497,3 +497,112 @@ IMPORTANT
         )
 
         return result
+    # ==========================================================
+    # Validate
+    # ==========================================================
+
+    def validate(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Validating AI data..."
+
+        )
+
+        if not isinstance(
+
+            data,
+
+            dict,
+
+        ):
+
+            raise ValueError(
+
+                "AI data must be dictionary."
+
+            )
+
+        required_fields = [
+
+            "machine_model",
+
+            "complaint",
+
+        ]
+
+        for field in required_fields:
+
+            value = data.get(
+
+                field,
+
+                "",
+
+            )
+
+            if value is None:
+
+                value = ""
+
+            value = str(
+
+                value
+
+            ).strip()
+
+            if value == "":
+
+                logger.warning(
+
+                    "Missing required field : %s",
+
+                    field,
+
+                )
+
+        optional_fields = [
+
+            "job_no",
+
+            "brand",
+
+            "sap_no",
+
+            "serial_no",
+
+            "customer",
+
+            "technician",
+
+            "employee_code",
+
+            "repair_action",
+
+            "detail",
+
+            "result",
+
+            "repair_date",
+
+        ]
+
+        for field in optional_fields:
+
+            if field not in data:
+
+                data[field] = ""
+
+        logger.info(
+
+            "Validation completed."
+
+        )
+
+        return data
