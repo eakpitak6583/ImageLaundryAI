@@ -606,3 +606,122 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Detect Report Type
+    # ==========================================================
+
+    def detect_report_type(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Detecting report type..."
+
+        )
+
+        job_no = str(
+
+            data.get(
+
+                "job_no",
+
+                "",
+
+            )
+
+        ).strip()
+
+        complaint = str(
+
+            data.get(
+
+                "complaint",
+
+                "",
+
+            )
+
+        ).strip()
+
+        repair_action = str(
+
+            data.get(
+
+                "repair_action",
+
+                "",
+
+            )
+
+        ).strip()
+
+        result = str(
+
+            data.get(
+
+                "result",
+
+                "",
+
+            )
+
+        ).strip()
+
+        # ------------------------------------------------------
+        # Service Report
+        # ------------------------------------------------------
+
+        if job_no != "":
+
+            logger.info(
+
+                "Report Type : service_report"
+
+            )
+
+            return "service_report"
+
+        # ------------------------------------------------------
+        # Repair Report
+        # ------------------------------------------------------
+
+        if complaint != "":
+
+            logger.info(
+
+                "Report Type : repair_report"
+
+            )
+
+            return "repair_report"
+
+        # ------------------------------------------------------
+        # AI Generated
+        # ------------------------------------------------------
+
+        if repair_action != "" or result != "":
+
+            logger.info(
+
+                "Report Type : ai_repair"
+
+            )
+
+            return "ai_repair"
+
+        # ------------------------------------------------------
+        # Unknown
+        # ------------------------------------------------------
+
+        logger.warning(
+
+            "Unknown report type."
+
+        )
+
+        return "unknown"
