@@ -994,3 +994,124 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Mapping
+    # ==========================================================
+
+    def mapping(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Start Mapping..."
+
+        )
+
+        # ------------------------------------------------------
+        # Customer
+        # ------------------------------------------------------
+
+        customer = customer_mapper.mapping(
+
+            data
+
+        )
+
+        if customer:
+
+            data.update(
+
+                customer
+
+            )
+
+        logger.info(
+
+            "Customer ID : %s",
+
+            data.get(
+
+                "customer_id"
+
+            ),
+
+        )
+
+        # ------------------------------------------------------
+        # Machine
+        # ------------------------------------------------------
+
+        machine = machine_mapper.mapping(
+
+            data,
+
+            data.get(
+
+                "customer_id"
+
+            ),
+
+        )
+
+        if machine:
+
+            data.update(
+
+                machine
+
+            )
+
+        logger.info(
+
+            "Machine ID : %s",
+
+            data.get(
+
+                "machine_id"
+
+            ),
+
+        )
+
+        # ------------------------------------------------------
+        # Technician
+        # ------------------------------------------------------
+
+        technician = technician_mapper.mapping(
+
+            data
+
+        )
+
+        if technician:
+
+            data.update(
+
+                technician
+
+            )
+
+        logger.info(
+
+            "Technician ID : %s",
+
+            data.get(
+
+                "technician_id"
+
+            ),
+
+        )
+
+        logger.info(
+
+            "Mapping completed."
+
+        )
+
+        return data
