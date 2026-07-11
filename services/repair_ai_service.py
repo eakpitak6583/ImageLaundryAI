@@ -327,4 +327,80 @@ IMPORTANT
         )
 
         return data
+    # ==========================================================
+    # Extract PDF
+    # ==========================================================
 
+    def extract_pdf(
+
+        self,
+
+        filepath,
+
+    ):
+
+        logger.info(
+
+            "Starting AI Extraction..."
+
+        )
+
+        report_text = self.read_pdf(
+
+            filepath
+
+        )
+
+        logger.info(
+
+            "Building AI Prompt..."
+
+        )
+
+        ai_response = self.ask_ai(
+
+            report_text
+
+        )
+
+        logger.info(
+
+            "Parsing AI Response..."
+
+        )
+
+        data = self.parse_json(
+
+            ai_response
+
+        )
+
+        if not isinstance(
+
+            data,
+
+            dict,
+
+        ):
+
+            raise ValueError(
+
+                "OpenAI response is not JSON Object."
+
+            )
+
+        logger.info(
+
+            "AI Extraction Completed."
+
+        )
+
+        logger.info(
+
+            "Fields Extracted : %s",
+
+            len(data),
+
+        )
+
+        return data
