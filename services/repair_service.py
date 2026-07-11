@@ -8,6 +8,9 @@ from repositories.repair_repository import (
 )
 
 from services.base_service import BaseService
+from services.repair_ai_service import (
+    repair_ai_service,
+)
 
 
 class RepairService(BaseService):
