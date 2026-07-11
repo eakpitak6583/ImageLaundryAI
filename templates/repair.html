@@ -6,6 +6,19 @@
 {% include "components/page_header.html" %}
 {% include "components/search_box.html" %}
 
+<div class="mb-3">
+
+    <button
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#importRepairModal">
+
+        📄 AI Import Repair PDF
+
+    </button>
+
+</div>
+
 <div class="card shadow-sm">
 
     <div class="card-body">
@@ -40,35 +53,15 @@
 
                 <tr>
 
-                    <td>
+                    <td>{{ r.job_no }}</td>
 
-                        {{ r.job_no }}
+                    <td>{{ r.machine_model }}</td>
 
-                    </td>
+                    <td>{{ r.complaint }}</td>
 
-                    <td>
+                    <td>{{ r.repair_action }}</td>
 
-                        {{ r.machine_model }}
-
-                    </td>
-
-                    <td>
-
-                        {{ r.complaint }}
-
-                    </td>
-
-                    <td>
-
-                        {{ r.repair_action }}
-
-                    </td>
-
-                    <td>
-
-                        {{ r.result }}
-
-                    </td>
+                    <td>{{ r.result }}</td>
 
                     <td>
 
@@ -90,7 +83,9 @@
 
                 <tr>
 
-                    <td colspan="6" class="text-center text-muted py-4">
+                    <td
+                        colspan="6"
+                        class="text-center text-muted py-5">
 
                         No repair history found.
 
@@ -103,6 +98,98 @@
             </tbody>
 
         </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- AI Import Repair PDF -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="importRepairModal"
+    tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form
+                method="post"
+                action="{{ url_for('repair.import_pdf') }}"
+                enctype="multipart/form-data">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+
+                        🤖 AI Import Repair Report
+
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Repair Report (PDF)
+
+                        </label>
+
+                        <input
+                            type="file"
+                            class="form-control"
+                            name="file"
+                            accept=".pdf"
+                            required>
+
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+
+                        AI จะอ่านรายงานซ่อมจาก PDF แล้วสร้าง Repair History ให้อัตโนมัติ
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        🤖 Import
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 

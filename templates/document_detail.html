@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h4 class="mb-0">
+
+                <i class="bi bi-file-earmark-text"></i>
+
+                Document Detail
+
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-bordered align-middle">
+
+                <tr>
+
+                    <th width="220">
+
+                        ID
+
+                    </th>
+
+                    <td>
+
+                        {{ document.id }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Filename
+
+                    </th>
+
+                    <td>
+
+                        {{ document.filename }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Document Type
+
+                    </th>
+
+                    <td>
+
+                        {{ document.document_type or "-" }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Machine Model
+
+                    </th>
+
+                    <td>
+
+                        {{ document.model or "-" }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Category
+
+                    </th>
+
+                    <td>
+
+                        {{ document.category or "-" }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Page
+
+                    </th>
+
+                    <td>
+
+                        {{ document.page }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        File Hash
+
+                    </th>
+
+                    <td style="word-break: break-all;">
+
+                        {{ document.file_hash }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Imported At
+
+                    </th>
+
+                    <td>
+
+                        {{ document.imported_at }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <th>
+
+                        Content
+
+                    </th>
+
+                    <td>
+
+                        <div
+                            class="border rounded p-3 bg-light"
+                            style="max-height:500px; overflow:auto; white-space:pre-wrap;">
+
+                            {{ document.content }}
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="mt-3">
+
+        <a
+            href="{{ url_for('documents.index') }}"
+            class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

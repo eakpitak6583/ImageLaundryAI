@@ -1,5 +1,5 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Document Routes
 """
 
@@ -36,10 +36,10 @@ UPLOAD_PATH = Path(Config.UPLOAD_FOLDER)
 
 
 # ==========================================================
-# Home
+# Document Home
 # ==========================================================
 
-@documents_bp.route("/")
+@documents_bp.route("/", methods=["GET"])
 @login_required
 def index():
 
@@ -47,21 +47,26 @@ def index():
 
     try:
 
-        logs = conn.execute(
-            """
+        logs = conn.execute("""
+
             SELECT *
+
             FROM import_logs
+
             ORDER BY imported_at DESC
-            """
-        ).fetchall()
+
+        """).fetchall()
 
     finally:
 
         conn.close()
 
     return render_template(
+
         "documents.html",
+
         logs=logs,
+
     )
 
 
@@ -83,12 +88,14 @@ def upload():
         if not file or file.filename == "":
 
             flash(
-                "Please select PDF file.",
-                "danger",
+                "Please select a PDF file.",
+                "warning",
             )
 
             return redirect(
-                url_for("documents.index")
+                url_for(
+                    "documents.index"
+                )
             )
 
         category = request.form.get(
@@ -106,15 +113,13 @@ def upload():
             exist_ok=True,
         )
 
-        filename = Path(file.filename).name
+        filename = Path(
+            file.filename
+        ).name
 
         filepath = UPLOAD_PATH / filename
 
         file.save(filepath)
-
-        print("=" * 60)
-        print("IMPORT PDF")
-        print("FILE :", filepath)
 
         imported = pdf_service.import_pdf(
 
@@ -130,15 +135,11 @@ def upload():
 
         )
 
-        print("PAGES IMPORTED =", imported)
-
-        pages = embedding_service.build()
-
-        print("VECTOR BUILT =", pages)
+        embedding_service.build()
 
         flash(
 
-            f"Import Success ({imported} pages)",
+            f"Import completed ({imported} pages)",
 
             "success",
 
@@ -150,28 +151,33 @@ def upload():
 
         flash(
 
-            "Import Failed. See Terminal.",
+            "Import failed. See server log.",
 
             "danger",
 
         )
 
     return redirect(
-        url_for("documents.index")
+        url_for(
+            "documents.index"
+        )
     )
 
 
 # ==========================================================
-# Search
+# Search Document
 # ==========================================================
 
-@documents_bp.route("/search")
+@documents_bp.route(
+    "/search",
+    methods=["GET"],
+)
 @login_required
 def search():
 
     keyword = request.args.get(
         "q",
-        ""
+        "",
     ).strip()
 
     rows = []
@@ -194,10 +200,13 @@ def search():
 
 
 # ==========================================================
-# Rebuild Vector
+# Rebuild Vector Database
 # ==========================================================
 
-@documents_bp.route("/rebuild")
+@documents_bp.route(
+    "/rebuild",
+    methods=["GET"],
+)
 @login_required
 def rebuild():
 
@@ -207,7 +216,7 @@ def rebuild():
 
         flash(
 
-            f"Vector rebuilt ({pages} pages)",
+            f"Vector rebuilt successfully ({pages} pages)",
 
             "success",
 
@@ -219,36 +228,50 @@ def rebuild():
 
         flash(
 
-            "Vector Build Failed",
+            "Vector rebuild failed.",
 
             "danger",
 
         )
 
     return redirect(
-        url_for("documents.index")
+        url_for(
+            "documents.index"
+        )
     )
 
 
 # ==========================================================
-# Enterprise PDF Viewer
+# PDF Viewer
 # ==========================================================
 
-@documents_bp.route("/viewer")
+@documents_bp.route(
+    "/viewer",
+    methods=["GET"],
+)
 @login_required
 def viewer():
 
     filename = Path(
-        request.args.get("file", "")
+
+        request.args.get(
+            "file",
+            "",
+        )
+
     ).name
 
     page = request.args.get(
+
         "page",
+
         1,
+
         type=int,
+
     )
 
-    if filename == "":
+    if not filename:
 
         abort(404)
 
@@ -264,18 +287,26 @@ def viewer():
 
 
 # ==========================================================
-# PDF Stream
+# Stream PDF
 # ==========================================================
 
-@documents_bp.route("/view")
+@documents_bp.route(
+    "/view",
+    methods=["GET"],
+)
 @login_required
 def view_pdf():
 
     filename = Path(
-        request.args.get("file", "")
+
+        request.args.get(
+            "file",
+            "",
+        )
+
     ).name
 
-    if filename == "":
+    if not filename:
 
         abort(404)
 

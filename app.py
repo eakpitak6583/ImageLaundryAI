@@ -123,7 +123,9 @@ def create_app():
     app = Flask(__name__)
 
     app.config.from_object(Config)
-
+    print("=" * 60)
+    print("APP KEY :", Config.OPENAI_API_KEY)
+    print("=" * 60)
     app.secret_key = Config.SECRET_KEY
 
     login_manager.init_app(app)

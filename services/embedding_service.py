@@ -4,6 +4,7 @@ Embedding Service
 """
 
 from pathlib import Path
+import os
 
 from config import Config
 from database.db import connect
@@ -21,13 +22,13 @@ class EmbeddingService:
 
         Path(self.vector_path).mkdir(
             parents=True,
-            exist_ok=True
+            exist_ok=True,
         )
 
         self._embeddings = None
 
     # ======================================================
-    # OpenAI Embeddings (Lazy Load)
+    # OpenAI Embeddings
     # ======================================================
 
     @property
@@ -35,15 +36,14 @@ class EmbeddingService:
 
         if self._embeddings is None:
 
-            if not Config.OPENAI_API_KEY:
-
-                raise RuntimeError(
-                    "OPENAI_API_KEY not found.\n"
-                    "Please check your .env file."
-                )
+            print("=" * 60)
+            print("CONFIG KEY :", Config.OPENAI_API_KEY)
+            print("ENV KEY    :", os.getenv("OPENAI_API_KEY"))
+            print("=" * 60)
 
             self._embeddings = OpenAIEmbeddings(
-                api_key=Config.OPENAI_API_KEY
+                api_key=Config.OPENAI_API_KEY,
+                model="text-embedding-3-small",
             )
 
         return self._embeddings
@@ -63,107 +63,75 @@ class EmbeddingService:
                 page,
                 content
             FROM documents
-            ORDER BY
-                filename,
-                page
+            ORDER BY filename,page
             """
         ).fetchall()
 
         if not rows:
-
-            raise RuntimeError(
-                "No document data found."
-            )
+            raise RuntimeError("No document data found.")
 
         docs = []
 
         for row in rows:
 
             docs.append(
-
                 Document(
-
                     page_content=row["content"],
-
                     metadata={
-
                         "filename": row["filename"],
-
-                        "page": row["page"]
-
-                    }
-
+                        "page": row["page"],
+                    },
                 )
-
             )
 
         db = FAISS.from_documents(
-
             docs,
-
-            self.embeddings
-
+            self.embeddings,
         )
 
-        db.save_local(
-            self.vector_path
-        )
+        db.save_local(self.vector_path)
 
         return len(docs)
 
     # ======================================================
-    # Load Vector Database
+    # Load Vector
     # ======================================================
 
     def load(self):
 
-        vector_index = Path(
-            self.vector_path
-        ) / "index.faiss"
+        index = Path(self.vector_path) / "index.faiss"
 
-        if not vector_index.exists():
-
+        if not index.exists():
             return None
 
         return FAISS.load_local(
-
             self.vector_path,
-
             self.embeddings,
-
-            allow_dangerous_deserialization=True
-
+            allow_dangerous_deserialization=True,
         )
 
     # ======================================================
-    # Similarity Search
+    # Search
     # ======================================================
 
     def similarity_search(
-
         self,
-
         question,
-
         k=5,
-
     ):
 
         db = self.load()
 
         if db is None:
-
-            raise RuntimeError(
-                "Vector database not found."
-            )
+            raise RuntimeError("Vector database not found.")
 
         return db.similarity_search(
             question,
-            k=k
+            k=k,
         )
 
     # ======================================================
-    # Rebuild Vector
+    # Rebuild
     # ======================================================
 
     def rebuild(self):

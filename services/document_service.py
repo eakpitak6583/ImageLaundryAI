@@ -1,83 +1,109 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Document Service
 """
 
-import os
-import uuid
+import hashlib
 
-from werkzeug.utils import secure_filename
+from repositories.document_repository import (
+    document_repository,
+)
 
-from repositories.document_repository import document_repository
+from services.base_service import BaseService
 
 
-class DocumentService:
+class DocumentService(BaseService):
 
-    ALLOWED_EXTENSIONS = {"pdf"}
-
-    def allowed_file(self, filename):
-
-        return (
-            "." in filename
-            and filename.rsplit(".", 1)[1].lower()
-            in self.ALLOWED_EXTENSIONS
-        )
-
-    def upload(
-        self,
-        file,
-        category,
-        title=None,
-        machine_model=None,
-        repair_id=None,
-        uploaded_by=None,
-    ):
-
-        if file is None:
-            raise Exception("No file selected")
-
-        if file.filename == "":
-            raise Exception("No filename")
-
-        if not self.allowed_file(file.filename):
-            raise Exception("Only PDF files are allowed")
-
-        filename = secure_filename(file.filename)
-
-        ext = filename.rsplit(".", 1)[1].lower()
-
-        unique_name = f"{uuid.uuid4()}.{ext}"
-
-        folder = os.path.join("uploads", category)
-
-        os.makedirs(folder, exist_ok=True)
-
-        filepath = os.path.join(folder, unique_name)
-
-        file.save(filepath)
-
-        filesize = os.path.getsize(filepath)
-
-        document_repository.create(
-            filename=filename,
-            filepath=filepath,
-            document_type="pdf",
-            model=machine_model,
-            category=category,
-            filesize=filesize,
-            uploaded_by=uploaded_by,
-        )
-
-        return filepath
+    # ==========================================================
+    # Read
+    # ==========================================================
 
     def get_all(self):
+
         return document_repository.get_all()
 
     def get(self, document_id):
+
         return document_repository.get(document_id)
 
+    def search(self, keyword):
+
+        return document_repository.search(keyword)
+
+    # ==========================================================
+    # Create
+    # ==========================================================
+
+    def create(self, data):
+
+        if not data.get("filename"):
+
+            return self.error(
+                "Filename is required"
+            )
+
+        file_hash = data.get("file_hash")
+
+        if not file_hash:
+
+            content = data.get("content", "")
+
+            file_hash = hashlib.sha256(
+                content.encode("utf-8")
+            ).hexdigest()
+
+            data["file_hash"] = file_hash
+
+        document_id = document_repository.create(
+            data
+        )
+
+        return self.success(document_id)
+
+    # ==========================================================
+    # Update
+    # ==========================================================
+
+    def update(self, document_id, data):
+
+        document = document_repository.get(
+            document_id
+        )
+
+        if not document:
+
+            return self.error(
+                "Document not found"
+            )
+
+        document_repository.update(
+            document_id,
+            data,
+        )
+
+        return self.success()
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
+
     def delete(self, document_id):
-        return document_repository.delete(document_id)
+
+        document = document_repository.get(
+            document_id
+        )
+
+        if not document:
+
+            return self.error(
+                "Document not found"
+            )
+
+        document_repository.delete(
+            document_id
+        )
+
+        return self.success()
 
 
 document_service = DocumentService()

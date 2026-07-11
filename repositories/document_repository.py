@@ -1,95 +1,202 @@
 """
-LaundryBot V7 Enterprise
+Image Laundry AI
 Document Repository
 """
 
-from database.db import connect
+from repositories.base_repository import BaseRepository
 
 
-class DocumentRepository:
+class DocumentRepository(BaseRepository):
 
-    def create(
-        self,
-        filename,
-        filepath,
-        document_type,
-        model,
-        category,
-        filesize,
-        uploaded_by,
-    ):
-
-        conn = connect()
-
-        conn.execute(
-            """
-            INSERT INTO document_files
-            (
-                filename,
-                filepath,
-                document_type,
-                model,
-                category,
-                filesize,
-                uploaded_by
-            )
-            VALUES
-            (
-                ?,?,?,?,?,?,?
-            )
-            """,
-            (
-                filename,
-                filepath,
-                document_type,
-                model,
-                category,
-                filesize,
-                uploaded_by,
-            ),
-        )
-
-        conn.commit()
+    # ==========================================================
+    # Read
+    # ==========================================================
 
     def get_all(self):
 
-        conn = connect()
+        return self.fetch_all("""
 
-        return conn.execute(
-            """
             SELECT *
-            FROM document_files
-            ORDER BY uploaded_at DESC
-            """
-        ).fetchall()
+
+            FROM documents
+
+            ORDER BY imported_at DESC,
+                     filename,
+                     page
+
+        """)
 
     def get(self, document_id):
 
-        conn = connect()
+        return self.fetch_one("""
 
-        return conn.execute(
-            """
             SELECT *
-            FROM document_files
-            WHERE id=?
-            """,
-            (document_id,),
-        ).fetchone()
+
+            FROM documents
+
+            WHERE id = ?
+
+        """, (
+
+            document_id,
+
+        ))
+
+    def search(self, keyword):
+
+        keyword = f"%{keyword}%"
+
+        return self.fetch_all("""
+
+            SELECT *
+
+            FROM documents
+
+            WHERE
+
+                filename LIKE ?
+
+                OR model LIKE ?
+
+                OR category LIKE ?
+
+                OR document_type LIKE ?
+
+                OR content LIKE ?
+
+            ORDER BY imported_at DESC,
+                     filename,
+                     page
+
+        """, (
+
+            keyword,
+
+            keyword,
+
+            keyword,
+
+            keyword,
+
+            keyword,
+
+        ))
+
+    # ==========================================================
+    # Create
+    # ==========================================================
+
+    def create(self, data):
+
+        return self.execute("""
+
+            INSERT INTO documents
+            (
+
+                filename,
+
+                document_type,
+
+                model,
+
+                category,
+
+                page,
+
+                content,
+
+                file_hash
+
+            )
+
+            VALUES
+            (
+                ?, ?, ?, ?, ?, ?, ?
+            )
+
+        """, (
+
+            data.get("filename"),
+
+            data.get("document_type"),
+
+            data.get("model"),
+
+            data.get("category"),
+
+            data.get("page"),
+
+            data.get("content"),
+
+            data.get("file_hash"),
+
+        ))
+
+    # ==========================================================
+    # Update
+    # ==========================================================
+
+    def update(self, document_id, data):
+
+        self.execute("""
+
+            UPDATE documents
+
+            SET
+
+                filename = ?,
+
+                document_type = ?,
+
+                model = ?,
+
+                category = ?,
+
+                page = ?,
+
+                content = ?,
+
+                file_hash = ?
+
+            WHERE id = ?
+
+        """, (
+
+            data.get("filename"),
+
+            data.get("document_type"),
+
+            data.get("model"),
+
+            data.get("category"),
+
+            data.get("page"),
+
+            data.get("content"),
+
+            data.get("file_hash"),
+
+            document_id,
+
+        ))
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
 
     def delete(self, document_id):
 
-        conn = connect()
+        self.execute("""
 
-        conn.execute(
-            """
-            DELETE
-            FROM document_files
-            WHERE id=?
-            """,
-            (document_id,),
-        )
+            DELETE FROM documents
 
-        conn.commit()
+            WHERE id = ?
+
+        """, (
+
+            document_id,
+
+        ))
 
 
 document_repository = DocumentRepository()

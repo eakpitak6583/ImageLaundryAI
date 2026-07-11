@@ -12,80 +12,127 @@ class PromptService:
 
     def __init__(self):
 
-        self.prompt_path = (
-            Path(Config.BASE_DIR)
-            / "prompts"
+        self.prompt_folder = Path(
+            Config.PROMPT_FOLDER
         )
 
-    # =====================================================
+    # ==========================================================
     # Load Prompt
-    # =====================================================
+    # ==========================================================
 
-    def load(self, filename):
+    def load(
 
-        path = self.prompt_path / filename
+        self,
+
+        filename,
+
+    ):
+
+        path = self.prompt_folder / filename
 
         if not path.exists():
 
             raise FileNotFoundError(
 
-                f"Prompt not found : {filename}"
+                f"Prompt file not found : {path}"
 
             )
 
         return path.read_text(
 
-            encoding="utf-8"
+            encoding="utf-8",
 
         )
 
-    # =====================================================
+    # ==========================================================
     # Repair Prompt
-    # =====================================================
+    # ==========================================================
 
-    def repair_prompt(self):
+    def repair_prompt(
+
+        self,
+
+    ):
 
         return self.load(
 
-            "repair_prompt.txt"
+            "repair_prompt.txt",
 
         )
 
-    # =====================================================
+    # ==========================================================
     # PM Prompt
-    # =====================================================
+    # ==========================================================
 
-    def pm_prompt(self):
+    def pm_prompt(
+
+        self,
+
+    ):
 
         return self.load(
 
-            "pm_prompt.txt"
+            "pm_prompt.txt",
 
         )
 
-    # =====================================================
+    # ==========================================================
     # Checklist Prompt
-    # =====================================================
+    # ==========================================================
 
-    def checklist_prompt(self):
+    def checklist_prompt(
+
+        self,
+
+    ):
 
         return self.load(
 
-            "checklist_prompt.txt"
+            "checklist_prompt.txt",
 
         )
 
-    # =====================================================
+    # ==========================================================
     # Dashboard Prompt
-    # =====================================================
+    # ==========================================================
 
-    def dashboard_prompt(self):
+    def dashboard_prompt(
+
+        self,
+
+    ):
 
         return self.load(
 
-            "dashboard_prompt.txt"
+            "dashboard_prompt.txt",
 
         )
+
+    # ==========================================================
+    # Build Repair Prompt
+    # ==========================================================
+
+    def build_repair_prompt(
+
+        self,
+
+        report_text,
+
+    ):
+
+        prompt = self.repair_prompt()
+
+        return f"""
+
+{prompt}
+
+============================================================
+REPAIR REPORT
+============================================================
+
+{report_text}
+
+"""
 
 
 prompt_service = PromptService()
