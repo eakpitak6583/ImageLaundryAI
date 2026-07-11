@@ -458,7 +458,19 @@ class DocumentService(BaseService):
 
         )
 
-        self.rebuild_vector()
+        try:
+
+            self.rebuild_vector()
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Vector rebuild failed after create : %s",
+
+                e,
+
+            )
 
         return self.success(
 
@@ -578,7 +590,19 @@ class DocumentService(BaseService):
 
         )
 
-        self.rebuild_vector()
+        try:
+
+            self.rebuild_vector()
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Vector rebuild failed after PDF import : %s",
+
+                e,
+
+            )
 
         logger.info(
 
@@ -698,7 +722,19 @@ class DocumentService(BaseService):
 
         )
 
-        self.rebuild_vector()
+        try:
+
+            self.rebuild_vector()
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Vector rebuild failed after update : %s",
+
+                e,
+
+            )
 
         logger.info(
 
@@ -721,6 +757,7 @@ class DocumentService(BaseService):
             count=1,
 
         )
+
     # ==========================================================
     # Delete
     # ==========================================================
@@ -761,7 +798,19 @@ class DocumentService(BaseService):
 
         )
 
-        self.rebuild_vector()
+        try:
+
+            self.rebuild_vector()
+
+        except Exception as e:
+
+            logger.exception(
+
+                "Vector rebuild failed after delete : %s",
+
+                e,
+
+            )
 
         logger.info(
 
@@ -784,7 +833,6 @@ class DocumentService(BaseService):
             count=1,
 
         )
-
     # ==========================================================
     # Latest Documents
     # ==========================================================
