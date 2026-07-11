@@ -201,7 +201,17 @@ class RagService:
 
             )
 
-            return ""
+            return {
+
+                "success": False,
+
+                "documents": [],
+
+                "context": "",
+
+                "count": 0,
+
+            }
 
         logger.info(
 
@@ -221,11 +231,21 @@ class RagService:
 
             )
 
-            return ""
+            return {
+
+                "success": False,
+
+                "documents": [],
+
+                "context": "",
+
+                "count": 0,
+
+            }
 
         try:
 
-            docs = db.similarity_search(
+            documents = db.similarity_search(
 
                 question,
 
@@ -245,7 +265,7 @@ class RagService:
 
             raise
 
-        if not docs:
+        if not documents:
 
             logger.info(
 
@@ -253,19 +273,29 @@ class RagService:
 
             )
 
-            return ""
+            return {
+
+                "success": True,
+
+                "documents": [],
+
+                "context": "",
+
+                "count": 0,
+
+            }
 
         context = []
 
-        for index, doc in enumerate(
+        for index, document in enumerate(
 
-            docs,
+            documents,
 
             start=1,
 
         ):
 
-            filename = doc.metadata.get(
+            filename = document.metadata.get(
 
                 "filename",
 
@@ -273,7 +303,7 @@ class RagService:
 
             )
 
-            page = doc.metadata.get(
+            page = document.metadata.get(
 
                 "page",
 
@@ -283,11 +313,11 @@ class RagService:
 
             content = str(
 
-                doc.page_content or "",
+                document.page_content or "",
 
             ).strip()
 
-            if content == "":
+            if not content:
 
                 continue
 
@@ -311,15 +341,33 @@ PAGE : {page}
 
             "Retrieved %s document(s).",
 
-            len(context),
+            len(
+
+                documents,
+
+            ),
 
         )
 
-        return "\n".join(
+        return {
 
-            context,
+            "success": True,
 
-        )
+            "documents": documents,
+
+            "context": "\n".join(
+
+                context,
+
+            ),
+
+            "count": len(
+
+                documents,
+
+            ),
+
+        }
     # ==========================================================
     # Ask AI
     # ==========================================================
