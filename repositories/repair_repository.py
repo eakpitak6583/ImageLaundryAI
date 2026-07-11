@@ -3,7 +3,9 @@ LaundryBot V7 Enterprise
 Repair Repository
 """
 
-from repositories.base_repository import BaseRepository
+from repositories.base_repository import (
+    BaseRepository,
+)
 
 
 class RepairRepository(BaseRepository):
@@ -186,7 +188,6 @@ class RepairRepository(BaseRepository):
                 job_no = ?
 
                 OR
-
                 (
 
                     serial_no = ?
@@ -211,7 +212,7 @@ class RepairRepository(BaseRepository):
     # ==========================================================
     # Create
     # ==========================================================
-        def create(
+    def create(
 
         self,
 
@@ -334,7 +335,7 @@ class RepairRepository(BaseRepository):
     # ==========================================================
     # Update
     # ==========================================================
-        def update(
+    def update(
 
         self,
 
@@ -468,163 +469,48 @@ class RepairRepository(BaseRepository):
 
             return 0
 
-        return row.get(
-
-            "total",
-
-            0,
-
-        )
+        return row["total"]
 
     # ==========================================================
-    # Top Machine
+    # Latest
     # ==========================================================
-        def update(
+
+    def latest(
 
         self,
 
-        repair_id,
-
-        data,
+        limit=10,
 
     ):
 
-        self.execute(
+        return self.fetch_all(
 
             """
-            UPDATE repair_history
+            SELECT *
 
-            SET
+            FROM repair_history
 
-                job_no = ?,
+            ORDER BY
 
-                machine_model = ?,
+                created_at DESC,
 
-                complaint = ?,
+                id DESC
 
-                detail = ?,
-
-                repair_action = ?,
-
-                result = ?,
-
-                sap_no = ?,
-
-                serial_no = ?,
-
-                report_file = ?,
-
-                customer_id = ?,
-
-                technician_id = ?,
-
-                machine_id = ?,
-
-                updated_at = CURRENT_TIMESTAMP
-
-            WHERE id = ?
+            LIMIT ?
             """,
 
             (
 
-                data.get("job_no"),
-
-                data.get("machine_model"),
-
-                data.get("complaint"),
-
-                data.get("detail"),
-
-                data.get("repair_action"),
-
-                data.get("result"),
-
-                data.get("sap_no"),
-
-                data.get("serial_no"),
-
-                data.get("report_file"),
-
-                data.get("customer_id"),
-
-                data.get("technician_id"),
-
-                data.get("machine_id"),
-
-                repair_id,
+                limit,
 
             ),
 
         )
 
     # ==========================================================
-    # Delete
-    # ==========================================================
-
-    def delete(
-
-        self,
-
-        repair_id,
-
-    ):
-
-        self.execute(
-
-            """
-            DELETE
-
-            FROM repair_history
-
-            WHERE id = ?
-            """,
-
-            (
-
-                repair_id,
-
-            ),
-
-        )
-
-    # ==========================================================
-    # Statistics
-    # ==========================================================
-
-    def total(
-
-        self,
-
-    ):
-
-        row = self.fetch_one(
-
-            """
-            SELECT
-
-                COUNT(*) AS total
-
-            FROM repair_history
-            """
-
-        )
-
-        if row is None:
-
-            return 0
-
-        return row.get(
-
-            "total",
-
-            0,
-
-        )
-
-    # ==========================================================
     # Top Machine
     # ==========================================================
-        def top_machine(
+    def top_machine(
 
         self,
 
@@ -693,13 +579,15 @@ class RepairRepository(BaseRepository):
 
             FROM repair_history r
 
-            LEFT JOIN customers c
+            INNER JOIN customers c
 
                 ON r.customer_id = c.id
 
-            GROUP BY
+            WHERE
 
-                r.customer_id,
+                r.customer_id IS NOT NULL
+
+            GROUP BY
 
                 c.customer_name
 
@@ -723,7 +611,6 @@ class RepairRepository(BaseRepository):
     # ==========================================================
     # Top Technician
     # ==========================================================
-
     def top_technician(
 
         self,
@@ -743,13 +630,15 @@ class RepairRepository(BaseRepository):
 
             FROM repair_history r
 
-            LEFT JOIN technicians t
+            INNER JOIN technicians t
 
                 ON r.technician_id = t.id
 
-            GROUP BY
+            WHERE
 
-                r.technician_id,
+                r.technician_id IS NOT NULL
+
+            GROUP BY
 
                 t.fullname
 
@@ -773,7 +662,8 @@ class RepairRepository(BaseRepository):
     # ==========================================================
     # Top Complaint
     # ==========================================================
-        def top_complaint(
+
+    def top_complaint(
 
         self,
 
@@ -819,9 +709,7 @@ class RepairRepository(BaseRepository):
 
         )
 
-
 # ==========================================================
 # Singleton
 # ==========================================================
-
 repair_repository = RepairRepository()
