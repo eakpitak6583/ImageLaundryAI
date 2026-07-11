@@ -69,6 +69,7 @@ class Config:
     LOG_FOLDER = BASE_DIR / "logs"
 
     VECTOR_DB = BASE_DIR / "vector_db"
+    PROMPT_FOLDER = BASE_DIR / "prompts"
 
     # ==========================================================
     # Upload
