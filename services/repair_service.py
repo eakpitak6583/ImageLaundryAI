@@ -97,10 +97,12 @@ class RepairService(BaseService):
 
         )
 
-    # ==========================================================
+    
+            # ==========================================================
     # Create
     # ==========================================================
-        def create(
+
+    def create(
 
         self,
 
@@ -115,8 +117,6 @@ class RepairService(BaseService):
         )
 
         required_fields = [
-
-            "job_no",
 
             "machine_id",
 
@@ -138,7 +138,17 @@ class RepairService(BaseService):
 
             )
 
-            if value is None or str(value).strip() == "":
+            if value is None:
+
+                value = ""
+
+            value = str(
+
+                value,
+
+            ).strip()
+
+            if value == "":
 
                 return self.error(
 
@@ -154,17 +164,21 @@ class RepairService(BaseService):
 
         logger.info(
 
-            "Repair created : %s",
+            "Repair ID : %s",
 
             repair_id,
 
         )
 
-        return self.success(
+        return {
 
-            repair_id,
+            "success": True,
 
-        )
+            "repair_id": repair_id,
+
+            "data": repair_id,
+
+        }
 
     # ==========================================================
     # AI Import PDF
