@@ -288,3 +288,28 @@ repair_repository = RepairRepository()
         """)
 
         return row["total"]
+    # ==========================================================
+    # Top Complaint
+    # ==========================================================
+
+    def top_complaint(self, limit=10):
+
+        return self.fetch_all("""
+            SELECT
+
+                complaint,
+
+                COUNT(*) AS total
+
+            FROM repair_history
+
+            GROUP BY complaint
+
+            ORDER BY total DESC
+
+            LIMIT ?
+        """, (
+
+            limit,
+
+        ))
