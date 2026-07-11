@@ -104,7 +104,7 @@ class RepairService(BaseService):
     # ==========================================================
     # Create
     # ==========================================================
-        def create(
+    def create(
 
         self,
 
@@ -235,7 +235,7 @@ class RepairService(BaseService):
     # ==========================================================
     # Update
     # ==========================================================
-        def update(
+    def update(
 
         self,
 
@@ -354,7 +354,7 @@ class RepairService(BaseService):
     # ==========================================================
     # Statistics
     # ==========================================================
-        def total(
+    def total(
 
         self,
 
@@ -437,4 +437,4 @@ class RepairService(BaseService):
     # ==========================================================
     # Singleton
     # ==========================================================
-    repair_service = RepairService()
+        repair_service = RepairService()
