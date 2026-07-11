@@ -1,96 +1,211 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Repair Routes
 """
 
+import os
+
 from flask import (
+
     Blueprint,
+
     render_template,
+
     request,
+
     redirect,
+
     url_for,
+
     flash,
+
+    current_app,
+
 )
 
-from flask_login import login_required
+from flask_login import (
 
-from services.repair_service import repair_service
+    login_required,
 
-
-repair_bp = Blueprint(
-    "repair",
-    __name__,
-    url_prefix="/repairs",
 )
 
+from werkzeug.utils import (
 
+    secure_filename,
+
+)
+
+from services.repair_service import (
+
+    repair_service,
+
+)
 # ==========================================================
-# Repair List
-# ==========================================================
-
-@repair_bp.route("/", methods=["GET"])
-@login_required
-def index():
-
-    keyword = request.args.get(
-        "q",
-        "",
-    ).strip()
-
-    if keyword:
-
-        repairs = repair_service.search(
-            keyword
-        )
-
-    else:
-
-        repairs = repair_service.get_all()
-
-    return render_template(
-
-        "repair.html",
-
-        repairs=repairs,
-
-        keyword=keyword,
-
-    )
-
-
-# ==========================================================
-# Repair Detail
+# AI Import Page
 # ==========================================================
 
 @repair_bp.route(
-    "/<int:repair_id>",
-    methods=["GET"],
+
+    "/import",
+
+    methods=[
+
+        "GET",
+
+        "POST",
+
+    ],
+
 )
+
 @login_required
-def detail(repair_id):
+def import_pdf():
 
-    repair = repair_service.get(
-        repair_id
-    )
+    if request.method == "GET":
 
-    if not repair:
+        return render_template(
+
+            "repair_import.html",
+
+        )
+
+    # ------------------------------------------------------
+    # Upload File
+    # ------------------------------------------------------
+
+    if "file" not in request.files:
 
         flash(
-            "Repair record not found.",
+
+            "Please select PDF file.",
+
             "warning",
+
         )
 
         return redirect(
+
             url_for(
-                "repair.index"
+
+                "repair.import_pdf",
+
             )
+
         )
 
-    return render_template(
+    file = request.files["file"]
 
-        "repair_detail.html",
+    if file.filename == "":
 
-        repair=repair,
+        flash(
+
+            "Please select PDF file.",
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.import_pdf",
+
+            )
+
+        )
+
+    filename = secure_filename(
+
+        file.filename,
+
+    )
+
+    upload_folder = os.path.join(
+
+        current_app.config.get(
+
+            "UPLOAD_FOLDER",
+
+            "uploads",
+
+        ),
+
+        "repair",
+
+    )
+
+    os.makedirs(
+
+        upload_folder,
+
+        exist_ok=True,
+
+    )
+
+    filepath = os.path.join(
+
+        upload_folder,
+
+        filename,
+
+    )
+
+    file.save(
+
+        filepath,
+
+    )
+
+    # ------------------------------------------------------
+    # AI Import
+    # ------------------------------------------------------
+
+    try:
+
+        result = repair_service.import_pdf(
+
+            filepath,
+
+        )
+
+    except Exception as e:
+
+        flash(
+
+            str(e),
+
+            "danger",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.import_pdf",
+
+            )
+
+        )
+
+    flash(
+
+        "AI Import completed successfully.",
+
+        "success",
+
+    )
+
+    return redirect(
+
+        url_for(
+
+            "repair.detail",
+
+            repair_id=result["repair_id"],
+
+        )
 
     )
 
@@ -98,77 +213,180 @@ def detail(repair_id):
 # ==========================================================
 # Create
 # ==========================================================
-
-@repair_bp.route(
-    "/create",
-    methods=["POST"],
-)
-@login_required
-def create():
-
-    result = repair_service.create(
-        request.form
-    )
-
-    if result.get("success"):
-
-        flash(
-            "Repair created successfully.",
-            "success",
-        )
-
-    else:
-
-        flash(
-            result.get(
-                "message",
-                "Unable to create repair.",
-            ),
-            "danger",
-        )
-
-    return redirect(
-        url_for(
-            "repair.index"
-        )
-    )
-
-
 # ==========================================================
-# Update
+# AI Preview
 # ==========================================================
 
 @repair_bp.route(
-    "/<int:repair_id>/update",
-    methods=["POST"],
-)
-@login_required
-def update(repair_id):
 
-    result = repair_service.update(
+    "/preview/<int:repair_id>",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def preview(
+
+    repair_id,
+
+):
+
+    repair = repair_service.get(
 
         repair_id,
 
-        request.form,
+    )
+
+    if not repair:
+
+        flash(
+
+            "Repair record not found.",
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.index",
+
+            )
+
+        )
+
+    return render_template(
+
+        "repair_preview.html",
+
+        repair=repair,
 
     )
 
-    if result.get("success"):
+
+# ==========================================================
+# Re Import PDF
+# ==========================================================
+
+@repair_bp.route(
+
+    "/<int:repair_id>/reimport",
+
+    methods=[
+
+        "POST",
+
+    ],
+
+)
+
+@login_required
+def reimport(
+
+    repair_id,
+
+):
+
+    repair = repair_service.get(
+
+        repair_id,
+
+    )
+
+    if not repair:
 
         flash(
-            "Repair updated successfully.",
-            "success",
+
+            "Repair record not found.",
+
+            "warning",
+
         )
 
-    else:
+        return redirect(
+
+            url_for(
+
+                "repair.index",
+
+            )
+
+        )
+
+    filepath = repair.get(
+
+        "report_file",
+
+        "",
+
+    )
+
+    if filepath == "":
 
         flash(
-            result.get(
-                "message",
-                "Unable to update repair.",
-            ),
+
+            "Original PDF not found.",
+
             "danger",
+
         )
+
+        return redirect(
+
+            url_for(
+
+                "repair.detail",
+
+                repair_id=repair_id,
+
+            )
+
+        )
+
+    try:
+
+        repair_service.import_pdf(
+
+            filepath,
+
+        )
+
+    except Exception as e:
+
+        flash(
+
+            str(e),
+
+            "danger",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.detail",
+
+                repair_id=repair_id,
+
+            )
+
+        )
+
+    flash(
+
+        "AI Re-import completed.",
+
+        "success",
+
+    )
 
     return redirect(
 
@@ -184,43 +402,173 @@ def update(repair_id):
 
 
 # ==========================================================
-# Delete
+# Create
+# ==========================================================
+# ==========================================================
+# Latest Repairs
 # ==========================================================
 
 @repair_bp.route(
-    "/<int:repair_id>/delete",
-    methods=["POST"],
+
+    "/latest",
+
+    methods=[
+
+        "GET",
+
+    ],
+
 )
+
 @login_required
-def delete(repair_id):
+def latest():
 
-    result = repair_service.delete(
-        repair_id
-    )
+    repairs = repair_service.latest(
 
-    if result.get("success"):
-
-        flash(
-            "Repair deleted successfully.",
-            "success",
-        )
-
-    else:
-
-        flash(
-            result.get(
-                "message",
-                "Unable to delete repair.",
-            ),
-            "danger",
-        )
-
-    return redirect(
-
-        url_for(
-
-            "repair.index"
-
-        )
+        limit=20,
 
     )
+
+    return render_template(
+
+        "repair_latest.html",
+
+        repairs=repairs,
+
+    )
+
+
+# ==========================================================
+# AI Import Status
+# ==========================================================
+
+@repair_bp.route(
+
+    "/<int:repair_id>/status",
+
+    methods=[
+
+        "GET",
+
+    ],
+
+)
+
+@login_required
+def status(
+
+    repair_id,
+
+):
+
+    repair = repair_service.get(
+
+        repair_id,
+
+    )
+
+    if not repair:
+
+        flash(
+
+            "Repair record not found.",
+
+            "warning",
+
+        )
+
+        return redirect(
+
+            url_for(
+
+                "repair.index",
+
+            )
+
+        )
+
+    return render_template(
+
+        "repair_status.html",
+
+        repair=repair,
+
+    )
+
+
+# ==========================================================
+# Create
+# ==========================================================
+# ==========================================================
+# Allowed File
+# ==========================================================
+
+def allowed_file(
+
+    filename,
+
+):
+
+    if not filename:
+
+        return False
+
+    return (
+
+        "." in filename
+
+        and
+
+        filename.rsplit(
+
+            ".",
+
+            1,
+
+        )[1].lower() == "pdf"
+
+    )
+
+
+# ==========================================================
+# Before Upload Validation
+# ==========================================================
+
+def validate_upload(
+
+    file,
+
+):
+
+    if file is None:
+
+        return False, "No file uploaded."
+
+    if file.filename == "":
+
+        return False, "Please select PDF file."
+
+    if not allowed_file(
+
+        file.filename,
+
+    ):
+
+        return False, "Only PDF files are allowed."
+
+    return True, ""
+
+
+# ==========================================================
+# Error Handler
+# ==========================================================
+
+@repair_bp.errorhandler(
+
+    Exception,
+
+)
+
+def handle_exception(
+
+   
