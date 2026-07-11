@@ -154,3 +154,18 @@ class RepairService(BaseService):
 
 
 repair_service = RepairService()
+    # ==========================================================
+    # Statistics
+    # ==========================================================
+
+    def total(self):
+
+        return self.repo.total()
+
+    def top_machine(self, limit=10):
+
+        return self.repo.top_machine(limit)
+
+    def top_complaint(self, limit=10):
+
+        return self.repo.top_complaint(limit)
