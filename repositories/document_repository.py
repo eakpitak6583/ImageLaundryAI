@@ -81,6 +81,136 @@ class DocumentRepository(BaseRepository):
             keyword,
 
         ))
+    # ==========================================================
+    # Import Logs
+    # ==========================================================
+
+    def import_logs(
+
+        self,
+
+    ):
+
+        return self.fetch_all(
+
+            """
+
+            SELECT *
+
+            FROM import_logs
+
+            ORDER BY
+
+                imported_at DESC,
+
+                id DESC
+
+            """
+
+        )
+    # ==========================================================
+    # Find By Hash
+    # ==========================================================
+
+    def find_by_hash(
+
+        self,
+
+        file_hash,
+
+    ):
+
+        if not file_hash:
+
+            return None
+
+        return self.fetch_one(
+
+            """
+
+            SELECT *
+
+            FROM documents
+
+            WHERE file_hash = ?
+
+            LIMIT 1
+
+            """,
+
+            (
+
+                file_hash,
+
+            ),
+
+        )
+    # ==========================================================
+    # Latest
+    # ==========================================================
+
+    def latest(
+
+        self,
+
+        limit=20,
+
+    ):
+
+        return self.fetch_all(
+
+            """
+
+            SELECT *
+
+            FROM documents
+
+            ORDER BY
+
+                imported_at DESC,
+
+                id DESC
+
+            LIMIT ?
+
+            """,
+
+            (
+
+                limit,
+
+            ),
+
+        )
+    # ==========================================================
+    # Statistics
+    # ==========================================================
+
+    def total(
+
+        self,
+
+    ):
+
+        row = self.fetch_one(
+
+            """
+
+            SELECT
+
+                COUNT(*) AS total
+
+            FROM documents
+
+            """
+
+        )
+
+        if row is None:
+
+            return 0
+
+        return row["total"]
 
     # ==========================================================
     # Create
@@ -197,6 +327,25 @@ class DocumentRepository(BaseRepository):
             document_id,
 
         ))
+
+    # ==========================================================
+    # Exists
+    # ==========================================================
+
+    def exists(
+
+        self,
+
+        file_hash,
+
+    ):
+
+        return self.find_by_hash(
+
+            file_hash,
+
+        ) is not None
+        
 
 
 document_repository = DocumentRepository()
