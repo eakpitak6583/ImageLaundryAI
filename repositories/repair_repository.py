@@ -1,5 +1,5 @@
 """
-Image Laundry AI
+LaundryBot V7 Enterprise
 Repair Repository
 """
 
@@ -12,29 +12,73 @@ class RepairRepository(BaseRepository):
     # Read
     # ==========================================================
 
-    def get_all(self):
+    def get_all(
 
-        return self.fetch_all("""
+        self,
+
+    ):
+
+        return self.fetch_all(
+
+            """
             SELECT *
+
             FROM repair_history
-            ORDER BY created_at DESC, id DESC
-        """)
 
-    def get(self, repair_id):
+            ORDER BY
 
-        return self.fetch_one("""
+                created_at DESC,
+
+                id DESC
+            """
+
+        )
+
+    def get(
+
+        self,
+
+        repair_id,
+
+    ):
+
+        return self.fetch_one(
+
+            """
             SELECT *
+
             FROM repair_history
+
             WHERE id = ?
-        """, (repair_id,))
 
-    def search(self, keyword):
+            LIMIT 1
+            """,
+
+            (
+
+                repair_id,
+
+            ),
+
+        )
+
+    def search(
+
+        self,
+
+        keyword,
+
+    ):
 
         keyword = f"%{keyword}%"
 
-        return self.fetch_all("""
+        return self.fetch_all(
+
+            """
             SELECT *
+
             FROM repair_history
+
             WHERE
 
                 job_no LIKE ?
@@ -53,44 +97,131 @@ class RepairRepository(BaseRepository):
 
                 OR serial_no LIKE ?
 
-            ORDER BY created_at DESC, id DESC
-        """, (
+            ORDER BY
 
-            keyword,
+                created_at DESC,
 
-            keyword,
+                id DESC
+            """,
 
-            keyword,
+            (
 
-            keyword,
+                keyword,
 
-            keyword,
+                keyword,
 
-            keyword,
+                keyword,
 
-            keyword,
+                keyword,
 
-            keyword,
+                keyword,
 
-        ))
+                keyword,
 
-    def get_by_machine(self, machine_id):
+                keyword,
 
-        return self.fetch_all("""
+                keyword,
+
+            ),
+
+        )
+
+    def get_by_machine(
+
+        self,
+
+        machine_id,
+
+    ):
+
+        return self.fetch_all(
+
+            """
             SELECT *
+
             FROM repair_history
+
             WHERE machine_id = ?
-            ORDER BY created_at DESC
-        """, (machine_id,))
+
+            ORDER BY
+
+                created_at DESC,
+
+                id DESC
+            """,
+
+            (
+
+                machine_id,
+
+            ),
+
+        )
+
+    # ==========================================================
+    # Exists
+    # ==========================================================
+
+    def exists(
+
+        self,
+
+        job_no="",
+
+        serial_no="",
+
+    ):
+
+        return self.fetch_one(
+
+            """
+            SELECT
+
+                id
+
+            FROM repair_history
+
+            WHERE
+
+                job_no = ?
+
+                OR
+
+                (
+
+                    serial_no = ?
+
+                    AND serial_no <> ''
+
+                )
+
+            LIMIT 1
+            """,
+
+            (
+
+                job_no,
+
+                serial_no,
+
+            ),
+
+        )
 
     # ==========================================================
     # Create
     # ==========================================================
+        def create(
 
-    def create(self, data):
+        self,
 
-        return self.execute("""
+        data,
 
+    ):
+
+        return self.execute(
+
+            """
             INSERT INTO repair_history
             (
 
@@ -122,78 +253,100 @@ class RepairRepository(BaseRepository):
 
             VALUES
             (
+
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+
             )
+            """,
 
-        """, (
+            (
 
-            data.get("job_no"),
+                data.get("job_no"),
 
-            data.get("machine_model"),
+                data.get("machine_model"),
 
-            data.get("complaint"),
+                data.get("complaint"),
 
-            data.get("detail"),
+                data.get("detail"),
 
-            data.get("repair_action"),
+                data.get("repair_action"),
 
-            data.get("result"),
+                data.get("result"),
 
-            data.get("sap_no"),
+                data.get("sap_no"),
 
-            data.get("serial_no"),
+                data.get("serial_no"),
 
-            data.get("report_file"),
+                data.get("report_file"),
 
-            data.get("customer_id"),
+                data.get("customer_id"),
 
-            data.get("technician_id"),
+                data.get("technician_id"),
 
-            data.get("machine_id"),
+                data.get("machine_id"),
 
-        ))
+            ),
+
+        )
+
     # ==========================================================
     # Create From AI
     # ==========================================================
 
-    def create_ai(self, data):
+    def create_ai(
 
-        # ตรวจสอบข้อมูลซ้ำ
-        duplicate = self.fetch_one("""
-            SELECT id
-            FROM repair_history
-            WHERE
+        self,
 
-                job_no = ?
+        data,
 
-                OR
-                (
-                    serial_no = ?
-                    AND serial_no <> ''
-                )
+    ):
 
-            LIMIT 1
-        """, (
+        duplicate = self.exists(
 
-            data.get("job_no"),
+            job_no=data.get(
 
-            data.get("serial_no"),
+                "job_no",
 
-        ))
+                "",
+
+            ),
+
+            serial_no=data.get(
+
+                "serial_no",
+
+                "",
+
+            ),
+
+        )
 
         if duplicate:
 
             return duplicate["id"]
 
-        return self.create(data)
+        return self.create(
+
+            data,
+
+        )
+
     # ==========================================================
     # Update
     # ==========================================================
+        def update(
 
-    def update(self, repair_id, data):
+        self,
 
-        self.execute("""
+        repair_id,
 
+        data,
+
+    ):
+
+        self.execute(
+
+            """
             UPDATE repair_history
 
             SET
@@ -225,76 +378,412 @@ class RepairRepository(BaseRepository):
                 updated_at = CURRENT_TIMESTAMP
 
             WHERE id = ?
+            """,
 
-        """, (
+            (
 
-            data.get("job_no"),
+                data.get("job_no"),
 
-            data.get("machine_model"),
+                data.get("machine_model"),
 
-            data.get("complaint"),
+                data.get("complaint"),
 
-            data.get("detail"),
+                data.get("detail"),
 
-            data.get("repair_action"),
+                data.get("repair_action"),
 
-            data.get("result"),
+                data.get("result"),
 
-            data.get("sap_no"),
+                data.get("sap_no"),
 
-            data.get("serial_no"),
+                data.get("serial_no"),
 
-            data.get("report_file"),
+                data.get("report_file"),
 
-            data.get("customer_id"),
+                data.get("customer_id"),
 
-            data.get("technician_id"),
+                data.get("technician_id"),
 
-            data.get("machine_id"),
+                data.get("machine_id"),
 
-            repair_id,
+                repair_id,
 
-        ))
+            ),
+
+        )
 
     # ==========================================================
     # Delete
     # ==========================================================
 
-    def delete(self, repair_id):
+    def delete(
 
-        self.execute("""
+        self,
 
-            DELETE FROM repair_history
+        repair_id,
+
+    ):
+
+        self.execute(
+
+            """
+            DELETE
+
+            FROM repair_history
 
             WHERE id = ?
+            """,
 
-        """, (
+            (
 
-            repair_id,
+                repair_id,
 
-        ))
+            ),
 
+        )
 
-repair_repository = RepairRepository()
     # ==========================================================
     # Statistics
     # ==========================================================
 
-    def total(self):
+    def total(
 
-        row = self.fetch_one("""
-            SELECT COUNT(*) AS total
+        self,
+
+    ):
+
+        row = self.fetch_one(
+
+            """
+            SELECT
+
+                COUNT(*) AS total
+
             FROM repair_history
-        """)
+            """
 
-        return row["total"]
+        )
+
+        if row is None:
+
+            return 0
+
+        return row.get(
+
+            "total",
+
+            0,
+
+        )
+
+    # ==========================================================
+    # Top Machine
+    # ==========================================================
+        def update(
+
+        self,
+
+        repair_id,
+
+        data,
+
+    ):
+
+        self.execute(
+
+            """
+            UPDATE repair_history
+
+            SET
+
+                job_no = ?,
+
+                machine_model = ?,
+
+                complaint = ?,
+
+                detail = ?,
+
+                repair_action = ?,
+
+                result = ?,
+
+                sap_no = ?,
+
+                serial_no = ?,
+
+                report_file = ?,
+
+                customer_id = ?,
+
+                technician_id = ?,
+
+                machine_id = ?,
+
+                updated_at = CURRENT_TIMESTAMP
+
+            WHERE id = ?
+            """,
+
+            (
+
+                data.get("job_no"),
+
+                data.get("machine_model"),
+
+                data.get("complaint"),
+
+                data.get("detail"),
+
+                data.get("repair_action"),
+
+                data.get("result"),
+
+                data.get("sap_no"),
+
+                data.get("serial_no"),
+
+                data.get("report_file"),
+
+                data.get("customer_id"),
+
+                data.get("technician_id"),
+
+                data.get("machine_id"),
+
+                repair_id,
+
+            ),
+
+        )
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
+
+    def delete(
+
+        self,
+
+        repair_id,
+
+    ):
+
+        self.execute(
+
+            """
+            DELETE
+
+            FROM repair_history
+
+            WHERE id = ?
+            """,
+
+            (
+
+                repair_id,
+
+            ),
+
+        )
+
+    # ==========================================================
+    # Statistics
+    # ==========================================================
+
+    def total(
+
+        self,
+
+    ):
+
+        row = self.fetch_one(
+
+            """
+            SELECT
+
+                COUNT(*) AS total
+
+            FROM repair_history
+            """
+
+        )
+
+        if row is None:
+
+            return 0
+
+        return row.get(
+
+            "total",
+
+            0,
+
+        )
+
+    # ==========================================================
+    # Top Machine
+    # ==========================================================
+        def top_machine(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.fetch_all(
+
+            """
+            SELECT
+
+                machine_model,
+
+                COUNT(*) AS total
+
+            FROM repair_history
+
+            WHERE
+
+                machine_model IS NOT NULL
+
+                AND machine_model <> ''
+
+            GROUP BY
+
+                machine_model
+
+            ORDER BY
+
+                total DESC,
+
+                machine_model ASC
+
+            LIMIT ?
+            """,
+
+            (
+
+                limit,
+
+            ),
+
+        )
+
+    # ==========================================================
+    # Top Customer
+    # ==========================================================
+
+    def top_customer(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.fetch_all(
+
+            """
+            SELECT
+
+                c.customer_name,
+
+                COUNT(*) AS total
+
+            FROM repair_history r
+
+            LEFT JOIN customers c
+
+                ON r.customer_id = c.id
+
+            GROUP BY
+
+                r.customer_id,
+
+                c.customer_name
+
+            ORDER BY
+
+                total DESC,
+
+                c.customer_name ASC
+
+            LIMIT ?
+            """,
+
+            (
+
+                limit,
+
+            ),
+
+        )
+
+    # ==========================================================
+    # Top Technician
+    # ==========================================================
+
+    def top_technician(
+
+        self,
+
+        limit=10,
+
+    ):
+
+        return self.fetch_all(
+
+            """
+            SELECT
+
+                t.fullname,
+
+                COUNT(*) AS total
+
+            FROM repair_history r
+
+            LEFT JOIN technicians t
+
+                ON r.technician_id = t.id
+
+            GROUP BY
+
+                r.technician_id,
+
+                t.fullname
+
+            ORDER BY
+
+                total DESC,
+
+                t.fullname ASC
+
+            LIMIT ?
+            """,
+
+            (
+
+                limit,
+
+            ),
+
+        )
+
     # ==========================================================
     # Top Complaint
     # ==========================================================
+        def top_complaint(
 
-    def top_complaint(self, limit=10):
+        self,
 
-        return self.fetch_all("""
+        limit=10,
+
+    ):
+
+        return self.fetch_all(
+
+            """
             SELECT
 
                 complaint,
@@ -303,13 +792,36 @@ repair_repository = RepairRepository()
 
             FROM repair_history
 
-            GROUP BY complaint
+            WHERE
 
-            ORDER BY total DESC
+                complaint IS NOT NULL
+
+                AND complaint <> ''
+
+            GROUP BY
+
+                complaint
+
+            ORDER BY
+
+                total DESC,
+
+                complaint ASC
 
             LIMIT ?
-        """, (
+            """,
 
-            limit,
+            (
 
-        ))
+                limit,
+
+            ),
+
+        )
+
+
+# ==========================================================
+# Singleton
+# ==========================================================
+
+repair_repository = RepairRepository()
