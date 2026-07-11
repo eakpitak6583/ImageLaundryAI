@@ -725,3 +725,100 @@ IMPORTANT
         )
 
         return "unknown"
+    # ==========================================================
+    # Clean Result
+    # ==========================================================
+
+    def clean_result(
+
+        self,
+
+        data,
+
+    ):
+
+        logger.info(
+
+            "Cleaning AI result..."
+
+        )
+
+        if data is None:
+
+            return {}
+
+        if not isinstance(
+
+            data,
+
+            dict,
+
+        ):
+
+            raise ValueError(
+
+                "AI result must be dictionary."
+
+            )
+
+        cleaned = {}
+
+        for key, value in data.items():
+
+            if value is None:
+
+                value = ""
+
+            if not isinstance(
+
+                value,
+
+                str,
+
+            ):
+
+                value = str(
+
+                    value
+
+                )
+
+            value = value.replace(
+
+                "\u00A0",
+
+                " ",
+
+            )
+
+            value = value.replace(
+
+                "\r",
+
+                " ",
+
+            )
+
+            value = value.replace(
+
+                "\n",
+
+                " ",
+
+            )
+
+            value = " ".join(
+
+                value.split()
+
+            )
+
+            cleaned[key] = value.strip()
+
+        logger.info(
+
+            "Clean Result completed."
+
+        )
+
+        return cleaned
