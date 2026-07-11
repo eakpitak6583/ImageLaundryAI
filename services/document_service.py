@@ -815,7 +815,7 @@ class DocumentService(BaseService):
 
         )
 
-        if hasattr(
+        if not hasattr(
 
             self.repo,
 
@@ -823,15 +823,17 @@ class DocumentService(BaseService):
 
         ):
 
-            documents = self.repo.latest(
+            return self.error(
 
-                limit,
+                "Repository does not support latest().",
 
             )
 
-        else:
+        documents = self.repo.latest(
 
-            documents = self.repo.get_all()[:limit]
+            limit,
+
+        )
 
         return self.success(
 
@@ -887,8 +889,6 @@ class DocumentService(BaseService):
 
             },
 
-            count=total,
-
         )
 
     # ==========================================================
@@ -920,8 +920,6 @@ class DocumentService(BaseService):
                     "pages": pages,
 
                 },
-
-                count=pages,
 
             )
 
@@ -1155,29 +1153,23 @@ class DocumentService(BaseService):
 
         )
 
-        return {
+        return self.success(
 
-            "success": True,
+            data={
 
-            "service": "document_service",
+                "service": "document_service",
 
-            "repository": self.repo is not None,
+                "repository": self.repo is not None,
 
-            "upload_folder": str(
+                "upload_exists": self.upload_path.exists(),
 
-                self.upload_path,
+                "rag_ready": rag_service.is_ready(),
 
-            ),
+                "status": "ok",
 
-            "upload_exists": self.upload_path.exists(),
+            },
 
-            "embedding_ready": embedding_service is not None,
-
-            "rag_ready": rag_service.is_ready(),
-
-            "status": "ok",
-
-        }
+        )
 
     # ==========================================================
     # Statistics
@@ -1197,8 +1189,6 @@ class DocumentService(BaseService):
 
         try:
 
-            total = 0
-
             if hasattr(
 
                 self.repo,
@@ -1217,23 +1207,19 @@ class DocumentService(BaseService):
 
                 )
 
-            return {
+            return self.success(
 
-                "success": True,
+                data={
 
-                "total_documents": total,
+                    "total_documents": total,
 
-                "upload_folder": str(
+                    "vector_ready": rag_service.is_ready(),
 
-                    self.upload_path,
+                    "upload_exists": self.upload_path.exists(),
 
-                ),
+                },
 
-                "vector_ready": rag_service.is_ready(),
-
-                "embedding_ready": embedding_service is not None,
-
-            }
+            )
 
         except Exception as e:
 
@@ -1265,9 +1251,7 @@ class DocumentService(BaseService):
 
             self.upload_path.exists()
 
-            and
-
-            rag_service.is_ready()
+            and rag_service.is_ready()
 
         )
 
@@ -1281,29 +1265,27 @@ class DocumentService(BaseService):
 
     ):
 
-        return {
+        return self.success(
 
-            "name": "LaundryBot V7 Enterprise",
+            data={
 
-            "module": "Document Service",
+                "name": "LaundryBot V7 Enterprise",
 
-            "version": getattr(
+                "module": "Document Service",
 
-                Config,
+                "version": getattr(
 
-                "VERSION",
+                    Config,
 
-                "7.0",
+                    "VERSION",
 
-            ),
+                    "7.0",
 
-            "upload_folder": str(
+                ),
 
-                self.upload_path,
+            },
 
-            ),
-
-        }
+        )
 
 
 # ==========================================================
